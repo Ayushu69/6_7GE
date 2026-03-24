@@ -5,7 +5,7 @@ using namespace std;
 
 struct Player{
     SDL_FRect rect;
-    float speed;
+    float speed, acceleration, friction, maxSpeed;
     float dx, dy;
 
 
@@ -62,6 +62,10 @@ public:
     Game(){
         player.rect = {100, 100, 50, 50};
         player.speed = 200.0f;
+        player.acceleration = 2000.0f;
+        player.friction = 1200.0f;
+        player.maxSpeed = 400.0f;
+        
         boxes.push_back({{300, 200, 100, 100}});
         boxes.push_back({{500, 100, 150, 50}});
         boxes.push_back({{200, 400, 200, 50}});
