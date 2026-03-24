@@ -6,9 +6,11 @@ using namespace std;
 struct Player{
     SDL_FRect rect;
     float speed;
+    float dx, dy;
+
 
     void update(const Uint8* keys, float deltaTime){
-        float dx = 0.0f, dy = 0.0f;
+        dx = dy = 0.0f;
 
         if(keys[SDL_SCANCODE_W]) dy -= 1;
         if(keys[SDL_SCANCODE_S]) dy += 1;
@@ -28,54 +30,103 @@ struct Player{
         if (rect.y < 0) rect.y = 0;
         if (rect.x + rect.w > 800) rect.x = 800 - rect.w;
         if (rect.y + rect.h > 600) rect.y = 600 - rect.h;
-
-        if(keys[SDL_SCANCODE_W]) cout << "W\n";
     }
 
     void render(SDL_Renderer* renderer) const {
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
         SDL_RenderFillRectF(renderer, &rect);
     }
-
 };
+
+struct Box{
+    SDL_FRect rect;
+
+    void render(SDL_Renderer* renderer) const{
+        SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+        SDL_RenderFillRectF(renderer, &rect);
+    }
+};
+
+bool checkCollision(const SDL_FRect& a, const SDL_FRect& b) {
+    return (a.x < b.x + b.w &&
+            a.x + a.w > b.x &&
+            a.y < b.y + b.h &&
+            a.y + a.h > b.y);
+}
 
 class Game {
 public:
     Player player;
+    vector<Box> boxes;
 
     Game(){
         player.rect = {100, 100, 50, 50};
-        player.speed = 300.0f;
+        player.speed = 200.0f;
+        boxes.push_back({{300, 200, 100, 100}});
+        boxes.push_back({{500, 100, 150, 50}});
+        boxes.push_back({{200, 400, 200, 50}});
     }
 
     void update(const Uint8* keys, float deltaTime) {
         player.update(keys, deltaTime);
+
+        // MOVE PLAYER
+        player.rect.x += player.dx * player.speed * deltaTime;
+        player.rect.y += player.dy * player.speed * deltaTime;
+
+        // COLLISION RESOLUTION
+        for (const auto& box : boxes) {
+
+            if (checkCollision(player.rect, box.rect)) {
+
+                float overlapLeft   = (player.rect.x + player.rect.w) - box.rect.x;
+                float overlapRight  = (box.rect.x + box.rect.w) - player.rect.x;
+                float overlapTop    = (player.rect.y + player.rect.h) - box.rect.y;
+                float overlapBottom = (box.rect.y + box.rect.h) - player.rect.y;
+
+                float minX = (overlapLeft < overlapRight) ? overlapLeft : overlapRight;
+                float minY = (overlapTop < overlapBottom) ? overlapTop : overlapBottom;
+
+                // resolve on smallest axis
+                if (minX < minY) {
+                    if (overlapLeft < overlapRight)
+                        player.rect.x -= overlapLeft;
+                    else
+                        player.rect.x += overlapRight;
+
+                    player.dx = 0;
+                } else {
+                    if (overlapTop < overlapBottom)
+                        player.rect.y -= overlapTop;
+                    else
+                        player.rect.y += overlapBottom;
+
+                    player.dy = 0;
+                }
+            }
+        }
     }
 
     void render(SDL_Renderer* renderer) {
+        for(const auto& box: boxes){
+            box.render(renderer);
+        }
         player.render(renderer);
     }
 };
-
 
 
 // EVENTS
 void handleEvents(bool& running){
     SDL_Event event;
 
-    while (SDL_PollEvent(&event))
-        {
-            // cout << "Event type: " << event.type << "\n";
-
-            if (event.type == SDL_QUIT)
-                running = false;
-
-            if (event.type == SDL_KEYDOWN)
-            {
-                if (event.key.keysym.sym == SDLK_ESCAPE)
-                    running = false;
-            }
+    while (SDL_PollEvent(&event)){
+        if (event.type == SDL_QUIT) running = false;
+        
+        if (event.type == SDL_KEYDOWN){
+            if(event.key.keysym.sym == SDLK_ESCAPE) running = false;
         }
+    }
 }
 
 // GAME UPDATE
@@ -134,7 +185,7 @@ int main(int argc, char* argv[])
     bool running = true;
     Game game;
 
-    // Timing
+    // Timing for DT
     Uint64 now = SDL_GetPerformanceCounter();
     Uint64 last = 0;
     double deltaTime = 0;
@@ -145,9 +196,7 @@ int main(int argc, char* argv[])
 
     while (running)
     {
-        // -------------------------
         // Delta time
-        // -------------------------
         last = now;
         now = SDL_GetPerformanceCounter();
         deltaTime = (double)(now - last) / SDL_GetPerformanceFrequency();
@@ -162,6 +211,7 @@ int main(int argc, char* argv[])
             fpsTimer = 0.0;
         }
 
+        // GAME SYSTEM (EVENTS, UPDATION, RENDERING)
         handleEvents(running);
         tick(game, deltaTime);
         render(renderer, game);
