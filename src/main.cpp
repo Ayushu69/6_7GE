@@ -22,12 +22,14 @@ struct Player{
         }
 
         rect.x += dx*speed*deltaTime;
-        rect.y -= dy*speed*deltaTime;
+        rect.y += dy*speed*deltaTime;
 
         if (rect.x < 0) rect.x = 0;
         if (rect.y < 0) rect.y = 0;
         if (rect.x + rect.w > 800) rect.x = 800 - rect.w;
         if (rect.y + rect.h > 600) rect.y = 600 - rect.h;
+
+        if(keys[SDL_SCANCODE_W]) cout << "W\n";
     }
 
     void render(SDL_Renderer* renderer) const {
@@ -36,6 +38,62 @@ struct Player{
     }
 
 };
+
+class Game {
+public:
+    Player player;
+
+    Game(){
+        player.rect = {100, 100, 50, 50};
+        player.speed = 300.0f;
+    }
+
+    void update(const Uint8* keys, float deltaTime) {
+        player.update(keys, deltaTime);
+    }
+
+    void render(SDL_Renderer* renderer) {
+        player.render(renderer);
+    }
+};
+
+
+
+// EVENTS
+void handleEvents(bool& running){
+    SDL_Event event;
+
+    while (SDL_PollEvent(&event))
+        {
+            // cout << "Event type: " << event.type << "\n";
+
+            if (event.type == SDL_QUIT)
+                running = false;
+
+            if (event.type == SDL_KEYDOWN)
+            {
+                if (event.key.keysym.sym == SDLK_ESCAPE)
+                    running = false;
+            }
+        }
+}
+
+// GAME UPDATE
+void tick(Game& game, float deltaTime){
+    SDL_PumpEvents();
+    const Uint8* keys = SDL_GetKeyboardState(NULL);
+    game.update(keys, deltaTime);
+}
+
+// GLOBAL RENDERER
+void render(SDL_Renderer* renderer, Game& game) {
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+
+    game.render(renderer);
+
+    SDL_RenderPresent(renderer);
+}
 
 int main(int argc, char* argv[])
 {
@@ -46,11 +104,9 @@ int main(int argc, char* argv[])
     }
 
     SDL_Window* window = SDL_CreateWindow(
-        "six_sevenGE - Day 2",
-        SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED,
-        800,
-        600,
+        "six_sevenGE",
+        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+        800, 600,
         SDL_WINDOW_SHOWN
     );
 
@@ -75,22 +131,8 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    // -------------------------
-    // Game State
-    // -------------------------
-    // SDL_FRect player;
-    // player.x = 100;
-    // player.y = 100;
-    // player.w = 40;
-    // player.h = 40;
-
-    // float speed = 300.0f; pixels per second
-    Player player;
-    player.rect = {100, 100, 40, 40};
-    player.speed = 300.0f;
-
     bool running = true;
-    SDL_Event event;
+    Game game;
 
     // Timing
     Uint64 now = SDL_GetPerformanceCounter();
@@ -108,8 +150,7 @@ int main(int argc, char* argv[])
         // -------------------------
         last = now;
         now = SDL_GetPerformanceCounter();
-        deltaTime = (double)((now - last) * 1000 / (double)SDL_GetPerformanceFrequency());
-        deltaTime /= 1000; // ms -> seconds
+        deltaTime = (double)(now - last) / SDL_GetPerformanceFrequency();
 
         fpsTimer += deltaTime;
         frames++;
@@ -121,64 +162,9 @@ int main(int argc, char* argv[])
             fpsTimer = 0.0;
         }
 
-        // -------------------------
-        // Events
-        // -------------------------
-        while (SDL_PollEvent(&event))
-        {
-            // cout << "Event type: " << event.type << "\n";
-
-            if (event.type == SDL_QUIT)
-                running = false;
-
-            if (event.type == SDL_KEYDOWN)
-            {
-                if (event.key.keysym.sym == SDLK_ESCAPE)
-                    running = false;
-            }
-        }
-
-        // -------------------------
-        // Input (real-time)
-        // -------------------------
-        const Uint8* keys = SDL_GetKeyboardState(NULL);
-        player.update(keys, deltaTime);
-
-        // if (keys[SDL_SCANCODE_W] || keys[SDL_SCANCODE_UP])
-        //     player.y -= speed * (float)deltaTime;
-
-        // if (keys[SDL_SCANCODE_S] || keys[SDL_SCANCODE_DOWN])
-        //     player.y += speed * (float)deltaTime;
-
-        // if (keys[SDL_SCANCODE_A] || keys[SDL_SCANCODE_LEFT])
-        //     player.x -= speed * (float)deltaTime;
-
-        // if (keys[SDL_SCANCODE_D] || keys[SDL_SCANCODE_RIGHT])
-        //     player.x += speed * (float)deltaTime;
-
-        // -------------------------
-        // Optional: Keep player inside window
-        // -------------------------
-        // if (player.x < 0) player.x = 0;
-        // if (player.y < 0) player.y = 0;
-        // if (player.x + player.w > 800) player.x = 800 - player.w;
-        // if (player.y + player.h > 600) player.y = 600 - player.h;
-
-        // -------------------------
-        // Render
-        // -------------------------
-        //clear screen
-        SDL_SetRenderDrawColor(renderer, 20, 20, 20, 255);
-        SDL_RenderClear(renderer);
-
-        //draw player
-        player.render(renderer);
-
-        // SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        // SDL_RenderFillRectF(renderer, &player);
-
-        //present
-        SDL_RenderPresent(renderer);
+        handleEvents(running);
+        tick(game, deltaTime);
+        render(renderer, game);
     }
 
     SDL_DestroyRenderer(renderer);
