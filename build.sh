@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+
 mkdir -p bin
-g++ src/main.cpp -o bin/six_sevenGE.exe $(sdl2-config --cflags --libs)
+
+g++ src/main.cpp \
+src/core/Game.cpp \
+src/entities/Player.cpp \
+src/physics/Collision.cpp \
+-o bin/six_sevenGE.exe \
+$(sdl2-config --cflags --libs)
+
 echo "Build done ✅"
