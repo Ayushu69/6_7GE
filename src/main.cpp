@@ -5,7 +5,8 @@ using namespace std;
 
 struct Player{
     SDL_FRect rect;
-    float speed, acceleration, friction, maxSpeed;
+    float velX = 0.0f, velY = 0.0f;
+    float acceleration, friction, maxSpeed;
     float dx, dy;
 
 
@@ -17,19 +18,66 @@ struct Player{
         if(keys[SDL_SCANCODE_A]) dx -= 1;
         if(keys[SDL_SCANCODE_D]) dx += 1;
 
-        float length = sqrt(dx*dx + dy*dy);
-        if(length != 0){
-            dx /= length;
-            dy /= length;
+        // float length = sqrt(dx*dx + dy*dy);
+        // if(length != 0){
+        //     dx /= length;
+        //     dy /= length;
+        // }
+
+        // acceleration
+        if(dx != 0) velX += dx*acceleration*deltaTime;
+        if(dy != 0) velY += dy*acceleration*deltaTime;
+
+        // friction
+        if(dx == 0){
+            if(velX > 0){
+                velX -= friction * deltaTime;
+                if(velX < 0) velX = 0;
+            }
+            else if(velX < 0){
+                velX += friction * deltaTime;
+                if(velX > 0) velX = 0;
+            }
+        }
+        if(dy == 0){
+            if(velY > 0){
+                velY -= friction * deltaTime;
+                if(velY < 0) velY = 0;
+            }
+            else if(velY < 0){
+                velY += friction * deltaTime;
+                if(velY > 0) velY = 0;
+            }
         }
 
-        rect.x += dx*speed*deltaTime;
-        rect.y += dy*speed*deltaTime;
+        //  speed clamp
+        if(velX > maxSpeed) velX = maxSpeed;
+        if(velX < -maxSpeed) velX = -maxSpeed;
 
-        if (rect.x < 0) rect.x = 0;
-        if (rect.y < 0) rect.y = 0;
-        if (rect.x + rect.w > 800) rect.x = 800 - rect.w;
-        if (rect.y + rect.h > 600) rect.y = 600 - rect.h;
+        if(velY > maxSpeed) velY = maxSpeed;
+        if(velY < -maxSpeed) velY = -maxSpeed;
+
+        //move
+        rect.x += velX * deltaTime;
+        rect.y += velY * deltaTime;
+
+        // position clamp
+        if (rect.x < 0) {
+            rect.x = 0;
+            velX = 0;
+        }
+        if (rect.y < 0) {
+            rect.y = 0;
+            velY = 0;
+        }
+        if (rect.x + rect.w > 800) {
+            rect.x = 800 - rect.w;
+            velX = 0;
+        }
+        if (rect.y + rect.h > 600) {
+            rect.y = 600 - rect.h;
+            velY = 0;
+        }
     }
 
     void render(SDL_Renderer* renderer) const {
@@ -61,7 +109,6 @@ public:
 
     Game(){
         player.rect = {100, 100, 50, 50};
-        player.speed = 200.0f;
         player.acceleration = 2000.0f;
         player.friction = 1200.0f;
         player.maxSpeed = 400.0f;
@@ -73,10 +120,6 @@ public:
 
     void update(const Uint8* keys, float deltaTime) {
         player.update(keys, deltaTime);
-
-        // MOVE PLAYER
-        player.rect.x += player.dx * player.speed * deltaTime;
-        player.rect.y += player.dy * player.speed * deltaTime;
 
         // COLLISION RESOLUTION
         for (const auto& box : boxes) {
@@ -98,14 +141,14 @@ public:
                     else
                         player.rect.x += overlapRight;
 
-                    player.dx = 0;
+                    player.velX = 0;
                 } else {
                     if (overlapTop < overlapBottom)
                         player.rect.y -= overlapTop;
                     else
                         player.rect.y += overlapBottom;
 
-                    player.dy = 0;
+                    player.velY = 0;
                 }
             }
         }
