@@ -18,12 +18,6 @@ struct Player{
         if(keys[SDL_SCANCODE_A]) dx -= 1;
         if(keys[SDL_SCANCODE_D]) dx += 1;
 
-        // float length = sqrt(dx*dx + dy*dy);
-        // if(length != 0){
-        //     dx /= length;
-        //     dy /= length;
-        // }
-
         // acceleration
         if(dx != 0) velX += dx*acceleration*deltaTime;
         if(dy != 0) velY += dy*acceleration*deltaTime;
