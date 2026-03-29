@@ -9,6 +9,6 @@ struct Player {
 
     float dx, dy;
 
-    void update(const Uint8* keys, float dt);
+    void update(const Uint8* keys, float dt, float worldWidth, float worldHeight);
     void render(SDL_Renderer* renderer) const;
 };

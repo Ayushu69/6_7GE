@@ -1,6 +1,6 @@
 #include "Player.h"
 
-void Player::update(const Uint8* keys, float dt){
+void Player::update(const Uint8* keys, float dt, float worldWidth, float worldHeight) {
     dx = dy = 0.0f;
 
     if(keys[SDL_SCANCODE_W]) dy -= 1;
@@ -47,10 +47,10 @@ void Player::update(const Uint8* keys, float dt){
     rect.y += velY * dt;
 
     // bounds
-    if (rect.x < 0) { rect.x = 0; velX = 0; }
-    if (rect.y < 0) { rect.y = 0; velY = 0; }
-    if (rect.x + rect.w > 800) { rect.x = 800 - rect.w; velX = 0; }
-    if (rect.y + rect.h > 600) { rect.y = 600 - rect.h; velY = 0; }
+    if (rect.x < 0.0f) { rect.x = 0.0f; velX = 0.0f; }
+    if (rect.y < 0.0f) { rect.y = 0.0f; velY = 0.0f; }
+    if (rect.x + rect.w > worldWidth) { rect.x = worldWidth - rect.w; velX = 0.0f; }
+    if (rect.y + rect.h > worldHeight) { rect.y = worldHeight - rect.h; velY = 0.0f; }
 }
 
 void Player::render(SDL_Renderer* renderer) const {

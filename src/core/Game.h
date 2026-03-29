@@ -1,6 +1,6 @@
 #pragma once
-#include <bits/stdc++.h>
 #include <SDL2/SDL.h>
+#include <vector>
 #include "../entities/Player.h"
 
 struct Box {
@@ -15,6 +15,6 @@ public:
 
     Game();
 
-    void update(const Uint8* keys, float dt);
+    void update(const Uint8* keys, float dt, float worldWidth, float worldHeight);
     void render(SDL_Renderer* renderer);
 };

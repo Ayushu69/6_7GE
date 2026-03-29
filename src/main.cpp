@@ -1,9 +1,6 @@
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
-#include <bits/stdc++.h>
 #include "core/Game.h"
-
-using namespace std;
 
 // EVENTS
 void handleEvents(bool& running){
@@ -19,10 +16,13 @@ void handleEvents(bool& running){
 }
 
 // GAME UPDATE
-void tick(Game& game, float deltaTime){
+void tick(Game& game, SDL_Window* window, float deltaTime){
     SDL_PumpEvents();
     const Uint8* keys = SDL_GetKeyboardState(NULL);
-    game.update(keys, deltaTime);
+
+    int w = 0, h = 0;
+    SDL_GetWindowSize(window, &w, &h);
+    game.update(keys, deltaTime, static_cast<float>(w), static_cast<float>(h));
 }
 
 // GLOBAL RENDERER
@@ -36,7 +36,12 @@ void render(SDL_Renderer* renderer, Game& game) {
 }
 
 int main(int argc, char* argv[]) {
-    SDL_Init(SDL_INIT_VIDEO);
+
+    // 1) SDL init check
+    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+        SDL_Log("SDL_Init failed: %s", SDL_GetError());
+        return 1;
+    }
 
     SDL_Window* window = SDL_CreateWindow(
         "six_sevenGE",
@@ -45,11 +50,26 @@ int main(int argc, char* argv[]) {
         SDL_WINDOW_SHOWN
     );
 
+    // 2) Window creation check
+    if (window == nullptr) {
+        SDL_Log("SDL_CreateWindow failed: %s", SDL_GetError());
+        SDL_Quit();
+        return 1;
+    }
+
     SDL_Renderer* renderer = SDL_CreateRenderer(
         window, 
         -1,
         SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
     );
+
+    // 3) Renderer creation check
+    if (renderer == nullptr) {
+        SDL_Log("SDL_CreateRenderer failed: %s", SDL_GetError());
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        return 1;
+    }
 
     Game game;
     bool running = true;
@@ -65,7 +85,7 @@ int main(int argc, char* argv[]) {
 
         // GAME SYSTEM (EVENTS, UPDATION, RENDERING)
         handleEvents(running);
-        tick(game, dt);
+        tick(game, window, static_cast<float>(dt));
         render(renderer, game);
     }
 
