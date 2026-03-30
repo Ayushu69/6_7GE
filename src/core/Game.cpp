@@ -3,11 +3,6 @@
 #include<algorithm>
 #include<cmath>
 
-void Box::render(SDL_Renderer* renderer) const{
-    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-    SDL_RenderFillRectF(renderer, &rect);
-}
-
 Game::Game(){
     player.rect = {100, 100, 50, 50};
     player.acceleration = 2000.0f;
@@ -17,6 +12,25 @@ Game::Game(){
     boxes.push_back({{300, 200, 100, 100}});
     boxes.push_back({{500, 100, 150, 50}});
     boxes.push_back({{200, 400, 200, 50}});
+}
+
+bool Game::handleEvents() {
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_QUIT) return false;
+        if (event.type == SDL_KEYDOWN)
+            if (event.key.keysym.sym == SDLK_ESCAPE) return false;
+    }
+    return true;
+}
+
+void Game::tick(SDL_Window* window, float dt) {
+    SDL_PumpEvents();
+    const Uint8* keys = SDL_GetKeyboardState(NULL);
+
+    int w = 0, h = 0;
+    SDL_GetWindowSize(window, &w, &h);
+    update(keys, dt, static_cast<float>(w), static_cast<float>(h));
 }
 
 void Game::update(const Uint8* keys, float dt, float worldWidth, float worldHeight) {

@@ -2,29 +2,6 @@
 #include <SDL2/SDL.h>
 #include "core/Game.h"
 
-// EVENTS
-void handleEvents(bool& running){
-    SDL_Event event;
-
-    while (SDL_PollEvent(&event)){
-        if (event.type == SDL_QUIT) running = false;
-        
-        if (event.type == SDL_KEYDOWN){
-            if(event.key.keysym.sym == SDLK_ESCAPE) running = false;
-        }
-    }
-}
-
-// GAME UPDATE
-void tick(Game& game, SDL_Window* window, float deltaTime){
-    SDL_PumpEvents();
-    const Uint8* keys = SDL_GetKeyboardState(NULL);
-
-    int w = 0, h = 0;
-    SDL_GetWindowSize(window, &w, &h);
-    game.update(keys, deltaTime, static_cast<float>(w), static_cast<float>(h));
-}
-
 // GLOBAL RENDERER
 void render(SDL_Renderer* renderer, Game& game) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -76,16 +53,16 @@ int main(int argc, char* argv[]) {
 
     Uint64 now = SDL_GetPerformanceCounter();
     Uint64 last = 0;
-    double dt = 0;
-
+    double dt = 0.0f;
+    
     while (running) {
         last = now;
         now = SDL_GetPerformanceCounter();
         dt = (double)(now - last) / SDL_GetPerformanceFrequency();
 
         // GAME SYSTEM (EVENTS, UPDATION, RENDERING)
-        handleEvents(running);
-        tick(game, window, static_cast<float>(dt));
+        running = game.handleEvents();
+        game.tick(window, static_cast<float>(dt));
         render(renderer, game);
     }
 

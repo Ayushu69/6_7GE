@@ -1,7 +1,7 @@
 #include "Player.h"
 
 void Player::update(const Uint8* keys, float dt, float worldWidth, float worldHeight) {
-    dx = dy = 0.0f;
+    float dx = 0.0f, dy = 0.0f;
 
     if(keys[SDL_SCANCODE_W]) dy -= 1;
     if(keys[SDL_SCANCODE_S]) dy += 1;
