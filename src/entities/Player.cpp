@@ -3,10 +3,18 @@
 void Player::update(const Uint8* keys, float dt, float worldWidth, float worldHeight) {
     float dx = 0.0f, dy = 0.0f;
 
-    if(keys[SDL_SCANCODE_W]) dy -= 1;
-    if(keys[SDL_SCANCODE_S]) dy += 1;
-    if(keys[SDL_SCANCODE_A]) dx -= 1;
-    if(keys[SDL_SCANCODE_D]) dx += 1;
+    if(keys[SDL_SCANCODE_W]) dy -= 1.0f;
+    if(keys[SDL_SCANCODE_S]) dy += 1.0f;
+    if(keys[SDL_SCANCODE_A]) dx -= 1.0f;
+    if(keys[SDL_SCANCODE_D]) dx += 1.0f;
+
+    //Normalize input
+    const float lenSq = dx*dx + dy*dy;
+    if(lenSq > 1.0f){
+        const float len = SDL_sqrtf(lenSq);
+        dx /= len;
+        dy /= len;
+    }
 
     // acceleration
     if(dx != 0) velX += dx*acceleration*dt;
