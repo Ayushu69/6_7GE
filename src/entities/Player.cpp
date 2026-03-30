@@ -1,6 +1,8 @@
 #include "Player.h"
+#include "../Constants.h"
+#include "../core/Camera.h"
 
-void Player::update(const Uint8* keys, float dt, float worldWidth, float worldHeight) {
+void Player::update(const Uint8* keys, float dt) {
     float dx = 0.0f, dy = 0.0f;
 
     if(keys[SDL_SCANCODE_W]) dy -= 1.0f;
@@ -57,11 +59,17 @@ void Player::update(const Uint8* keys, float dt, float worldWidth, float worldHe
     // bounds
     if (rect.x < 0.0f) { rect.x = 0.0f; velX = 0.0f; }
     if (rect.y < 0.0f) { rect.y = 0.0f; velY = 0.0f; }
-    if (rect.x + rect.w > worldWidth) { rect.x = worldWidth - rect.w; velX = 0.0f; }
-    if (rect.y + rect.h > worldHeight) { rect.y = worldHeight - rect.h; velY = 0.0f; }
+    if (rect.x + rect.w > kWorldWidth) { rect.x = kWorldWidth - rect.w; velX = 0.0f; }
+    if (rect.y + rect.h > kWorldHeight) { rect.y = kWorldHeight - rect.h; velY = 0.0f; }
 }
 
-void Player::render(SDL_Renderer* renderer) const {
+void Player::render(SDL_Renderer* renderer, const Camera& camera) const {
+    SDL_FRect screenRect = {
+        rect.x - camera.x,
+        rect.y - camera.y,
+        rect.w,
+        rect.h
+    };
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    SDL_RenderFillRectF(renderer, &rect);
+    SDL_RenderFillRectF(renderer, &screenRect);
 }

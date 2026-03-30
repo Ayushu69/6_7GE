@@ -1,9 +1,10 @@
+#include "../Constants.h"
 #include "Game.h"
 #include "../physics/Collision.h"
 #include<algorithm>
 #include<cmath>
 
-Game::Game(){
+Game::Game(float screenW, float screenH) : camera(screenW, screenH) {
     player.rect = {100, 100, 50, 50};
     player.acceleration = 2000.0f;
     player.friction = 1200.0f;
@@ -30,10 +31,10 @@ void Game::tick(SDL_Window* window, float dt) {
 
     int w = 0, h = 0;
     SDL_GetWindowSize(window, &w, &h);
-    update(keys, dt, static_cast<float>(w), static_cast<float>(h));
+    update(keys, dt);
 }
 
-void Game::update(const Uint8* keys, float dt, float worldWidth, float worldHeight) {
+void Game::update(const Uint8* keys, float dt) {
     // Cap extreme frame times so one hitch does not create a huge physics jump.
     constexpr float kMaxFrameTime = 1.0f / 30.0f;   // ~33 ms max
     // Run physics in smaller chunks for stable collision checks.
@@ -45,7 +46,7 @@ void Game::update(const Uint8* keys, float dt, float worldWidth, float worldHeig
     const float stepDt = dt / static_cast<float>(steps);
 
     for (int i = 0; i < steps; ++i) {
-        player.update(keys, stepDt, worldWidth, worldHeight);
+        player.update(keys, stepDt);
 
         //collision resolution
         for (const auto& box : boxes) {
@@ -77,9 +78,10 @@ void Game::update(const Uint8* keys, float dt, float worldWidth, float worldHeig
             }
         }
     }
+    camera.update(player);
 }
 
 void Game::render(SDL_Renderer* renderer) {
-    for(const auto& box: boxes) box.render(renderer);
-    player.render(renderer);
+    for(const auto& box: boxes) box.render(renderer, camera);
+    player.render(renderer, camera);
 }

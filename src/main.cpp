@@ -1,5 +1,6 @@
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
+#include "Constants.h"
 #include "core/Game.h"
 
 // GLOBAL RENDERER
@@ -23,7 +24,7 @@ int main(int argc, char* argv[]) {
     SDL_Window* window = SDL_CreateWindow(
         "six_sevenGE",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        800, 600,
+        kWindowWidth, kWindowHeight,
         SDL_WINDOW_SHOWN
     );
 
@@ -48,7 +49,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    Game game;
+    Game game(kWindowWidth, kWindowHeight);
     bool running = true;
 
     Uint64 now = SDL_GetPerformanceCounter();

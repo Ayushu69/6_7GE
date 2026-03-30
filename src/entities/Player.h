@@ -1,12 +1,14 @@
 #pragma once
 #include <SDL2/SDL.h>
 
+struct Camera;
+
 struct Player {
     SDL_FRect rect;
 
     float velX = 0.0f, velY = 0.0f;
     float acceleration, friction, maxSpeed;
 
-    void update(const Uint8* keys, float dt, float worldWidth, float worldHeight);
-    void render(SDL_Renderer* renderer) const;
+    void update(const Uint8* keys, float dt);
+    void render(SDL_Renderer* renderer, const Camera& camera) const;
 };
