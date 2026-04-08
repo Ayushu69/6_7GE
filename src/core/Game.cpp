@@ -4,7 +4,7 @@
 #include<algorithm>
 #include<cmath>
 
-Game::Game(float screenW, float screenH) : camera(screenW, screenH) {
+Game::Game() : camera(kWindowWidth, kWindowHeight) {
     player.rect = {100, 100, 50, 50};
     player.acceleration = 2000.0f;
     player.friction = 1200.0f;
@@ -25,12 +25,9 @@ bool Game::handleEvents() {
     return true;
 }
 
-void Game::tick(SDL_Window* window, float dt) {
+void Game::tick(float dt) {
     SDL_PumpEvents();
     const Uint8* keys = SDL_GetKeyboardState(NULL);
-
-    int w = 0, h = 0;
-    SDL_GetWindowSize(window, &w, &h);
     update(keys, dt);
 }
 
@@ -78,7 +75,10 @@ void Game::update(const Uint8* keys, float dt) {
             }
         }
     }
-    camera.update(player);
+    camera.update(
+        player.rect.x + player.rect.w*0.5f,
+        player.rect.y + player.rect.h*0.5f
+    );
 }
 
 void Game::render(SDL_Renderer* renderer) {

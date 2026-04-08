@@ -12,10 +12,10 @@ public:
     std::vector<Box> boxes;
     Camera camera;
 
-    Game(float screenW, float screenH);
+    Game();
 
     bool handleEvents();
-    void tick(SDL_Window* window, float dt);
+    void tick(float dt);
 
     void update(const Uint8* keys, float dt);
     void render(SDL_Renderer* renderer);

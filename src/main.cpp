@@ -49,12 +49,12 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    Game game(kWindowWidth, kWindowHeight);
+    Game game;
     bool running = true;
 
     Uint64 now = SDL_GetPerformanceCounter();
     Uint64 last = 0;
-    double dt = 0.0f;
+    float dt = 0.0f;
     
     while (running) {
         last = now;
@@ -63,7 +63,7 @@ int main(int argc, char* argv[]) {
 
         // GAME SYSTEM (EVENTS, UPDATION, RENDERING)
         running = game.handleEvents();
-        game.tick(window, static_cast<float>(dt));
+        game.tick(static_cast<float>(dt));
         render(renderer, game);
     }
 

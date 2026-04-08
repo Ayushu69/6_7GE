@@ -1,7 +1,6 @@
 #pragma once
 #include <SDL2/SDL.h>
 #include "../Constants.h"
-#include "../entities/Player.h"
 
 struct Camera{
     float x = 0.0f, y = 0.0f;
@@ -9,9 +8,9 @@ struct Camera{
 
     Camera(float screenW, float screenH) : w(screenW), h(screenH) {}
 
-    void update(const Player& player){
-        x = player.rect.x + player.rect.w*0.5f - w*0.5f;
-        y = player.rect.y + player.rect.h*0.5f - h*0.5f;
+    void update(float targetCenterX, float targetCenterY) {
+        x = targetCenterX - w * 0.5f;
+        y = targetCenterY - h * 0.5f;
 
         //clamping to world bounds
         if(x < 0.0f) x = 0.0f;
