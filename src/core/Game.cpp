@@ -4,7 +4,10 @@
 #include<algorithm>
 #include<cmath>
 
-Game::Game() : camera(kWindowWidth, kWindowHeight) {
+Game::Game(SDL_Renderer* renderer) : camera(kWindowWidth, kWindowHeight) {
+    textures.init();
+    textures.load(renderer, "player", "assets/player.png");
+    textures.load(renderer, "box",    "assets/box.png");
     player.rect = {100, 100, 50, 50};
     player.acceleration = 2000.0f;
     player.friction = 1200.0f;
@@ -47,12 +50,12 @@ void Game::update(const Uint8* keys, float dt) {
 
         //collision resolution
         for (const auto& box : boxes) {
-            if (checkCollision(player.rect, box.rect)) {
+            if (checkCollision(player.colliderRect, box.rect)) {
 
-                float overlapLeft   = (player.rect.x + player.rect.w) - box.rect.x;
-                float overlapRight  = (box.rect.x + box.rect.w) - player.rect.x;
-                float overlapTop    = (player.rect.y + player.rect.h) - box.rect.y;
-                float overlapBottom = (box.rect.y + box.rect.h) - player.rect.y;
+                float overlapLeft   = (player.colliderRect.x + player.colliderRect.w) - box.rect.x;
+                float overlapRight  = (box.rect.x + box.rect.w) - player.colliderRect.x;
+                float overlapTop    = (player.colliderRect.y + player.colliderRect.h) - box.rect.y;
+                float overlapBottom = (box.rect.y + box.rect.h) - player.colliderRect.y;
 
                 float minX = std::min(overlapLeft, overlapRight);
                 float minY = std::min(overlapTop, overlapBottom);
@@ -82,6 +85,8 @@ void Game::update(const Uint8* keys, float dt) {
 }
 
 void Game::render(SDL_Renderer* renderer) {
-    for(const auto& box: boxes) box.render(renderer, camera);
-    player.render(renderer, camera);
+    for(const auto& box: boxes)
+        box.render(renderer, camera, textures.get("box"));
+
+    player.render(renderer, camera, textures.get("player"));
 }

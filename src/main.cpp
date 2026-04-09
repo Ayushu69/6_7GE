@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    Game game;
+    Game game(renderer);
     bool running = true;
 
     Uint64 now = SDL_GetPerformanceCounter();

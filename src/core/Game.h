@@ -5,14 +5,16 @@
 #include "Camera.h"
 #include "../entities/Box.h"
 #include "../entities/Player.h"
+#include "TextureManager.h"
 
 class Game {
 public:
+    TextureManager textures;
     Player player;
     std::vector<Box> boxes;
     Camera camera;
 
-    Game();
+    Game(SDL_Renderer* renderer);
 
     bool handleEvents();
     void tick(float dt);

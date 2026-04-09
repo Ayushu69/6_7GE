@@ -61,15 +61,31 @@ void Player::update(const Uint8* keys, float dt) {
     if (rect.y < 0.0f) { rect.y = 0.0f; velY = 0.0f; }
     if (rect.x + rect.w > kWorldWidth) { rect.x = kWorldWidth - rect.w; velX = 0.0f; }
     if (rect.y + rect.h > kWorldHeight) { rect.y = kWorldHeight - rect.h; velY = 0.0f; }
+
+    // after moving rect, sync collider
+    float insetX = 5.0f, insetY = 5.0f;
+    colliderRect = {
+        rect.x + insetX,
+        rect.y + insetY,
+        rect.w - insetX * 2,
+        rect.h - insetY * 2
+    };
 }
 
-void Player::render(SDL_Renderer* renderer, const Camera& camera) const {
+void Player::render(SDL_Renderer* renderer, const Camera& camera, SDL_Texture* tex) const {
     SDL_FRect screenRect = {
         rect.x - camera.x,
         rect.y - camera.y,
         rect.w,
         rect.h
     };
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    SDL_RenderFillRectF(renderer, &screenRect);
+
+    if (tex) {
+        SDL_RenderCopyF(renderer, tex, nullptr, &screenRect);
+        // nullptr for src means "use the whole texture"
+    } else {
+        // fallback to colored rect if no texture
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+        SDL_RenderFillRectF(renderer, &screenRect);
+    }
 }

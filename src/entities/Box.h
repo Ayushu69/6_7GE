@@ -4,5 +4,5 @@
 
 struct Box {
     SDL_FRect rect;
-    void render(SDL_Renderer* renderer, const Camera& camera) const;
+    void render(SDL_Renderer* renderer, const Camera& camera, SDL_Texture* tex) const;
 };
