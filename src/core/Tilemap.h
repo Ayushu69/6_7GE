@@ -5,7 +5,8 @@
 #include "Camera.h"
 
 struct Tilemap{
-    int tileSize = 64;
+    int tileSize = 16;
+    int renderScale = kRenderScale;
     int cols = 0;
     int rows = 0;
 
@@ -20,10 +21,10 @@ struct Tilemap{
     // returns the world-space SDL_FRect of a tile at (col, row)
     SDL_FRect getTileRect(int col, int row) const {
         return {
-            static_cast<float>(col * tileSize),
-            static_cast<float>(row * tileSize),
-            static_cast<float>(tileSize),
-            static_cast<float>(tileSize)
+            static_cast<float>(col * tileSize * renderScale),
+            static_cast<float>(row * tileSize * renderScale),
+            static_cast<float>(tileSize * renderScale),
+            static_cast<float>(tileSize * renderScale)
         };
     }
 };

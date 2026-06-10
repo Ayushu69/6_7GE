@@ -1,4 +1,5 @@
 #include "Tilemap.h"
+#include "../Constants.h"
 #include<fstream>
 #include<sstream>
 #include<SDL2/SDL.h>
@@ -35,10 +36,10 @@ bool Tilemap::loadFromCSV(const std::string& path) {
 
 void Tilemap::render(SDL_Renderer* renderer, const Camera& camera) const {
     // camera culling - only render visible tiles
-    int startCol = static_cast<int>(camera.x / tileSize);
-    int startRow = static_cast<int>(camera.y / tileSize);
-    int endCol   = static_cast<int>((camera.x + camera.w) / tileSize) + 1;
-    int endRow   = static_cast<int>((camera.y + camera.h) / tileSize) + 1;
+    int startCol = static_cast<int>(camera.x / (tileSize * renderScale));
+    int startRow = static_cast<int>(camera.y / (tileSize * renderScale));
+    int endCol   = static_cast<int>((camera.x + camera.w) / (tileSize * renderScale)) + 1;
+    int endRow   = static_cast<int>((camera.y + camera.h) / (tileSize * renderScale)) + 1;
 
     // clamp to map bounds
     startCol = std::max(0, startCol);
@@ -54,21 +55,21 @@ void Tilemap::render(SDL_Renderer* renderer, const Camera& camera) const {
             if (tileID == 0) continue;
 
             // world position of this tile
-            float worldX = static_cast<float>(col * tileSize);
-            float worldY = static_cast<float>(row * tileSize);
+            float worldX = static_cast<float>(col * tileSize * renderScale);
+            float worldY = static_cast<float>(row * tileSize * renderScale);
 
             // screen position
             SDL_FRect dst = {
                 worldX - camera.x,
                 worldY - camera.y,
-                static_cast<float>(tileSize),
-                static_cast<float>(tileSize)
+                static_cast<float>(tileSize * renderScale),
+                static_cast<float>(tileSize * renderScale)
             };
 
             if (tileset && sheetCols > 0) {
                 // crop the right tile from spritesheet
-                int srcX = (tileID % sheetCols) * tileSize;
-                int srcY = (tileID / sheetCols) * tileSize;
+                int srcX = (tileID % sheetCols) * (tileSize + kTileMargin);
+                int srcY = (tileID / sheetCols) * (tileSize + kTileMargin);
                 SDL_Rect src = { srcX, srcY, tileSize, tileSize };
                 SDL_RenderCopyF(renderer, tileset, &src, &dst);
             } else {

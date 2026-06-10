@@ -8,18 +8,14 @@ Game::Game(SDL_Renderer* renderer) : camera(kWindowWidth, kWindowHeight) {
     textures.init();
     textures.load(renderer, "player", "assets/player.png");
     textures.load(renderer, "box",    "assets/box.png");
-    player.rect = {200, 200, 50, 50};
-    player.acceleration = 2000.0f;
-    player.friction = 1200.0f;
-    player.maxSpeed = 400.0f;
-    tilemap.tileSize  = 64;
-    tilemap.sheetCols = 8; // tileset.png is 512px wide / 64 = 8 cols
-    tilemap.loadFromCSV("assets/arena.csv");
+    player.rect = {200, 2500, 32, 48};
+    player.acceleration = 3000.0f;
+    player.friction = 4000.0f;
+    player.maxSpeed = 200.0f;
+    tilemap.tileSize  = kTileSize;
+    tilemap.sheetCols = kTilesetColumns; // tileset.png is 512px wide / 16 = 32 cols
+    tilemap.loadFromCSV("assets/world.csv");
     tilemap.tileset = textures.load(renderer, "tileset", "assets/tileset.png");
-
-    boxes.push_back({{300, 200, 100, 100}});
-    boxes.push_back({{500, 100, 150, 50}});
-    boxes.push_back({{200, 400, 200, 50}});
 }
 
 bool Game::handleEvents() {
@@ -89,7 +85,7 @@ void Game::update(const Uint8* keys, float dt) {
             }
         }
         // --- tilemap collision ---
-        int ts = tilemap.tileSize;
+        int ts = tilemap.tileSize * tilemap.renderScale;
 
         // get tile range around player collider
         int startCol = static_cast<int>(player.colliderRect.x) / ts - 1;
@@ -122,11 +118,15 @@ void Game::update(const Uint8* keys, float dt) {
 
                 if (minX < minY) {
                     if (overlapLeft < overlapRight) player.rect.x -= overlapLeft;
-                    else                            player.rect.x += overlapRight;
+                    else player.rect.x += overlapRight;
                     player.velX = 0;
                 } else {
-                    if (overlapTop < overlapBottom) player.rect.y -= overlapTop;
-                    else                            player.rect.y += overlapBottom;
+                    if (overlapTop < overlapBottom){
+                         player.rect.y -= overlapTop;
+                         player.onGround = true; // landed on something
+                    }else {
+                        player.rect.y += overlapBottom;
+                    }
                     player.velY = 0;
                 }
 

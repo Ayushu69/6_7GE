@@ -15,7 +15,7 @@ struct Camera{
         //clamping to world bounds
         if(x < 0.0f) x = 0.0f;
         if(y < 0.0f) y = 0.0f;
-        if(x + w > kWorldWidth) x = kWorldWidth - w;
-        if(y + h > kWorldHeight) y = kWorldHeight - h;
+        if (x + w > kWorldTilesX * kTileSize * kRenderScale) x = kWorldTilesX * kTileSize * kRenderScale - w;
+        if (y + h > kWorldTilesY * kTileSize * kRenderScale) y = kWorldTilesY * kTileSize * kRenderScale - h;
     }
 };
