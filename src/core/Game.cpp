@@ -8,10 +8,14 @@ Game::Game(SDL_Renderer* renderer) : camera(kWindowWidth, kWindowHeight) {
     textures.init();
     textures.load(renderer, "player", "assets/player.png");
     textures.load(renderer, "box",    "assets/box.png");
-    player.rect = {100, 100, 50, 50};
+    player.rect = {200, 200, 50, 50};
     player.acceleration = 2000.0f;
     player.friction = 1200.0f;
     player.maxSpeed = 400.0f;
+    tilemap.tileSize  = 64;
+    tilemap.sheetCols = 8; // tileset.png is 512px wide / 64 = 8 cols
+    tilemap.loadFromCSV("assets/arena.csv");
+    tilemap.tileset = textures.load(renderer, "tileset", "assets/tileset.png");
 
     boxes.push_back({{300, 200, 100, 100}});
     boxes.push_back({{500, 100, 150, 50}});
@@ -75,16 +79,76 @@ void Game::update(const Uint8* keys, float dt) {
 
                     player.velY = 0;
                 }
+                // re-sync collider after push
+                player.colliderRect = {
+                    player.rect.x + 5.0f,
+                    player.rect.y + 5.0f,
+                    player.rect.w - 10.0f,
+                    player.rect.h - 10.0f
+                };
+            }
+        }
+        // --- tilemap collision ---
+        int ts = tilemap.tileSize;
+
+        // get tile range around player collider
+        int startCol = static_cast<int>(player.colliderRect.x) / ts - 1;
+        int startRow = static_cast<int>(player.colliderRect.y) / ts - 1;
+        int endCol   = static_cast<int>(player.colliderRect.x + player.colliderRect.w) / ts + 1;
+        int endRow   = static_cast<int>(player.colliderRect.y + player.colliderRect.h) / ts + 1;
+
+        // clamp to map bounds
+        startCol = std::max(0, startCol);
+        startRow = std::max(0, startRow);
+        endCol   = std::min(tilemap.cols - 1, endCol);
+        endRow   = std::min(tilemap.rows - 1, endRow);
+
+        for (int row = startRow; row <= endRow; row++) {
+            for (int col = startCol; col <= endCol; col++) {
+                int tileID = tilemap.mapData[row][col];
+                if (!tilemap.isSolid(tileID)) continue;
+
+                SDL_FRect tileRect = tilemap.getTileRect(col, row);
+
+                if (!checkCollision(player.colliderRect, tileRect)) continue;
+
+                float overlapLeft   = (player.colliderRect.x + player.colliderRect.w) - tileRect.x;
+                float overlapRight  = (tileRect.x + tileRect.w) - player.colliderRect.x;
+                float overlapTop    = (player.colliderRect.y + player.colliderRect.h) - tileRect.y;
+                float overlapBottom = (tileRect.y + tileRect.h) - player.colliderRect.y;
+
+                float minX = std::min(overlapLeft, overlapRight);
+                float minY = std::min(overlapTop, overlapBottom);
+
+                if (minX < minY) {
+                    if (overlapLeft < overlapRight) player.rect.x -= overlapLeft;
+                    else                            player.rect.x += overlapRight;
+                    player.velX = 0;
+                } else {
+                    if (overlapTop < overlapBottom) player.rect.y -= overlapTop;
+                    else                            player.rect.y += overlapBottom;
+                    player.velY = 0;
+                }
+
+                // re-sync collider after push
+                player.colliderRect = {
+                    player.rect.x + 5.0f,
+                    player.rect.y + 5.0f,
+                    player.rect.w - 10.0f,
+                    player.rect.h - 10.0f
+                };
             }
         }
     }
     camera.update(
-        player.rect.x + player.rect.w*0.5f,
-        player.rect.y + player.rect.h*0.5f
+        player.rect.x + player.rect.w * 0.5f,
+        player.rect.y + player.rect.h * 0.5f
     );
 }
 
 void Game::render(SDL_Renderer* renderer) {
+    tilemap.render(renderer, camera);  // ← add this first
+
     for(const auto& box: boxes)
         box.render(renderer, camera, textures.get("box"));
 

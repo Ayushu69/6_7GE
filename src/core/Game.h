@@ -6,11 +6,13 @@
 #include "../entities/Box.h"
 #include "../entities/Player.h"
 #include "TextureManager.h"
+#include "Tilemap.h"
 
 class Game {
 public:
     TextureManager textures;
     Player player;
+    Tilemap tilemap;
     std::vector<Box> boxes;
     Camera camera;
 

@@ -54,19 +54,20 @@ int main(int argc, char* argv[]) {
 
     Uint64 now = SDL_GetPerformanceCounter();
     Uint64 last = 0;
-    double dt = 0.0;
+    float dt = 0.0f;
 
     while (running) {
         last = now;
         now = SDL_GetPerformanceCounter();
-        dt = (double)(now - last) / SDL_GetPerformanceFrequency();
+        dt = (float)(now - last) / SDL_GetPerformanceFrequency();
 
         // GAME SYSTEM (EVENTS, UPDATION, RENDERING)
         running = game.handleEvents();
-        game.tick(static_cast<double>(dt));
+        game.tick(static_cast<float>(dt));
         render(renderer, game);
     }
-
+    
+    game.textures.shutdown();
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();

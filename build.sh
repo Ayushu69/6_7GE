@@ -8,6 +8,7 @@ src/entities/Player.cpp \
 src/entities/Box.cpp \
 src/physics/Collision.cpp \
 src/core/TextureManager.cpp \
+src/core/Tilemap.cpp \
 -o bin/six_sevenGE.exe \
 $(sdl2-config --cflags --libs) -lSDL2_image
 
