@@ -1,5 +1,6 @@
 #pragma once
 #include <SDL2/SDL.h>
+#include <array>
 #include <string>
 #include "../core/Animator.h"
 
@@ -14,6 +15,10 @@ enum class AnimState {
     Jump
 };
 
+struct InventorySlot {
+    int tileID = 0;
+    int count = 0;
+};
 struct Player {
     SDL_FRect rect;
     SDL_FRect colliderRect;
@@ -38,4 +43,6 @@ struct Player {
 
     // Get the texture key for the current animation state
     std::string getAnimTexture() const;
+
+    std::array<InventorySlot, 10> hotbar; // 10 slots for building blocks
 };

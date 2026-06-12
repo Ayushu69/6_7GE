@@ -21,4 +21,5 @@ public:
 
     void update(const Uint8* keys, float dt);
     void render(SDL_Renderer* renderer);
+    void renderHotbar(SDL_Renderer* renderer);
 };

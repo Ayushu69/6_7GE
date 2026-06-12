@@ -43,6 +43,51 @@ bool Game::handleEvents() {
         if (event.type == SDL_QUIT) return false;
         if (event.type == SDL_KEYDOWN)
             if (event.key.keysym.sym == SDLK_ESCAPE) return false;
+        if (event.type == SDL_MOUSEBUTTONDOWN){
+            if (event.button.button == SDL_BUTTON_LEFT) {
+                float worldX = event.button.x + camera.x;
+                float worldY = event.button.y + camera.y;
+
+                int col = (int)(worldX) / (tilemap.tileSize * tilemap.renderScale);
+                int row = (int)(worldY) / (tilemap.tileSize * tilemap.renderScale);
+
+                int brokenID = tilemap.mapData[row][col];
+
+
+                if (row >= 0 && row < tilemap.rows && col >= 0 && col < tilemap.cols) tilemap.mapData[row][col] = 0;
+
+                bool found = false;
+                for (auto& slot : player.hotbar) {
+                    if (slot.tileID == brokenID) {
+                        // Add to inventory (simple stack, no max count for demo)
+                        slot.count += 1;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    // Item not in hotbar, add to first empty slot
+                    for (auto& slot : player.hotbar) {
+                        if (slot.tileID == 0 && slot.count == 0) {
+                            slot.tileID = brokenID;
+                            slot.count = 1;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        if (event.type == SDL_MOUSEBUTTONDOWN){
+            if (event.button.button == SDL_BUTTON_RIGHT) {
+                float worldX = event.button.x + camera.x;
+                float worldY = event.button.y + camera.y;
+
+                int col = (int)(worldX) / (tilemap.tileSize * tilemap.renderScale);
+                int row = (int)(worldY) / (tilemap.tileSize * tilemap.renderScale);
+
+                if (row >= 0 && row < tilemap.rows && col >= 0 && col < tilemap.cols) tilemap.mapData[row][col] = 1;
+            }
+        }
     }
     return true;
 }
@@ -137,4 +182,31 @@ void Game::render(SDL_Renderer* renderer) {
     tilemap.render(renderer, camera);
 
     player.render(renderer, camera, textures);
+    renderHotbar(renderer);
+}
+
+void Game::renderHotbar(SDL_Renderer* renderer) {
+    int slotSize = 48;
+    int padding = 8;
+    int totalWidth = player.hotbar.size() * slotSize + (player.hotbar.size() - 1) * padding;
+    int x = (kWindowWidth - totalWidth) / 2;
+    int y = kWindowHeight - slotSize - padding;
+    for (const auto& slot : player.hotbar) {
+        SDL_Rect rect = {x, y, slotSize, slotSize};
+        SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
+        SDL_RenderFillRect(renderer, &rect);
+        if(slot.tileID != 0 && slot.count > 0) {
+            SDL_Texture* tex = textures.get("tileset");
+            if(tex) {
+                int ts = tilemap.tileSize;
+                int tileX = (slot.tileID % tilemap.sheetCols) * ts;
+                int tileY = (slot.tileID / tilemap.sheetCols) * ts;
+                SDL_Rect src = { tileX, tileY, ts, ts };
+                SDL_RenderCopy(renderer, tex, &src, &rect);            
+            }
+        }
+        x += slotSize + padding;
+        SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
+        SDL_RenderDrawRect(renderer, &rect);
+    }
 }
