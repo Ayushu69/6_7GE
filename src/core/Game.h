@@ -3,7 +3,6 @@
 #include <vector>
 #include "../Constants.h"
 #include "Camera.h"
-#include "../entities/Box.h"
 #include "../entities/Player.h"
 #include "TextureManager.h"
 #include "Tilemap.h"
@@ -13,7 +12,6 @@ public:
     TextureManager textures;
     Player player;
     Tilemap tilemap;
-    std::vector<Box> boxes;
     Camera camera;
 
     Game(SDL_Renderer* renderer);

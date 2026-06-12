@@ -51,8 +51,8 @@ void Tilemap::render(SDL_Renderer* renderer, const Camera& camera) const {
         for (int col = startCol; col <= endCol; col++) {
             int tileID = mapData[row][col];
 
-            // 0 = air, skip
-            if (tileID == 0) continue;
+            // skip only invalid/negative tiles
+            if (tileID < 0) continue;
 
             // world position of this tile
             float worldX = static_cast<float>(col * tileSize * renderScale);
@@ -82,7 +82,6 @@ void Tilemap::render(SDL_Renderer* renderer, const Camera& camera) const {
 }
 
 bool Tilemap::isSolid(int tileID) const {
-    // 0 = air (not solid)
-    // everything else is solid for now
-    return tileID != 0;
+    // 0 = sky (not solid), 1+ = solid blocks (grass, dirt, rock)
+    return tileID > 0;
 }

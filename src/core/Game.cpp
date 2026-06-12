@@ -4,18 +4,37 @@
 #include<algorithm>
 #include<cmath>
 
-Game::Game(SDL_Renderer* renderer) : camera(kWindowWidth, kWindowHeight) {
+Game::Game(SDL_Renderer* renderer) 
+    : camera(kWindowWidth, kWindowHeight),
+      player(64, 64, 4, 0.15f) {
     textures.init();
-    textures.load(renderer, "player", "assets/player.png");
-    textures.load(renderer, "box",    "assets/box.png");
-    player.rect = {200, 2500, 32, 48};
+
+    // Load all player animation sheets
+    textures.load(renderer, "anim_idle", "assets/Idle_Side-Sheet.png");
+    textures.load(renderer, "anim_walk", "assets/Walk_Side-Sheet.png");
+    textures.load(renderer, "anim_run",  "assets/Run_Side-Sheet.png");
+
+    player.rect = {200, 0, 48, 64};
     player.acceleration = 3000.0f;
     player.friction = 4000.0f;
     player.maxSpeed = 200.0f;
+    player.setupAnimations();
+
     tilemap.tileSize  = kTileSize;
-    tilemap.sheetCols = kTilesetColumns; // tileset.png is 512px wide / 16 = 32 cols
+    tilemap.sheetCols = kTilesetColumns;
     tilemap.loadFromCSV("assets/world.csv");
     tilemap.tileset = textures.load(renderer, "tileset", "assets/tileset.png");
+
+    // Find surface at player's column and spawn above it
+    int ts = tilemap.tileSize * tilemap.renderScale;
+    int spawnCol = static_cast<int>(player.rect.x) / ts;
+    spawnCol = std::max(0, std::min(spawnCol, tilemap.cols - 1));
+    for (int row = 0; row < tilemap.rows; ++row) {
+        if (tilemap.isSolid(tilemap.mapData[row][spawnCol])) {
+            player.rect.y = static_cast<float>(row * ts) - player.rect.h - 4.0f;
+            break;
+        }
+    }
 }
 
 bool Game::handleEvents() {
@@ -29,7 +48,8 @@ bool Game::handleEvents() {
 }
 
 void Game::tick(float dt) {
-    SDL_PumpEvents();
+    // SDL_PollEvent() in handleEvents() already pumps the event queue,
+    // so SDL_GetKeyboardState() returns the up-to-date snapshot here.
     const Uint8* keys = SDL_GetKeyboardState(NULL);
     update(keys, dt);
 }
@@ -48,42 +68,9 @@ void Game::update(const Uint8* keys, float dt) {
     for (int i = 0; i < steps; ++i) {
         player.update(keys, stepDt);
 
-        //collision resolution
-        for (const auto& box : boxes) {
-            if (checkCollision(player.colliderRect, box.rect)) {
+        // Reset each sub-step; collision resolution below will re-set if still on ground.
+        player.onGround = false;
 
-                float overlapLeft   = (player.colliderRect.x + player.colliderRect.w) - box.rect.x;
-                float overlapRight  = (box.rect.x + box.rect.w) - player.colliderRect.x;
-                float overlapTop    = (player.colliderRect.y + player.colliderRect.h) - box.rect.y;
-                float overlapBottom = (box.rect.y + box.rect.h) - player.colliderRect.y;
-
-                float minX = std::min(overlapLeft, overlapRight);
-                float minY = std::min(overlapTop, overlapBottom);
-
-                if (minX < minY) {
-                    if (overlapLeft < overlapRight)
-                        player.rect.x -= overlapLeft;
-                    else
-                        player.rect.x += overlapRight;
-
-                    player.velX = 0;
-                } else {
-                    if (overlapTop < overlapBottom)
-                        player.rect.y -= overlapTop;
-                    else
-                        player.rect.y += overlapBottom;
-
-                    player.velY = 0;
-                }
-                // re-sync collider after push
-                player.colliderRect = {
-                    player.rect.x + 5.0f,
-                    player.rect.y + 5.0f,
-                    player.rect.w - 10.0f,
-                    player.rect.h - 10.0f
-                };
-            }
-        }
         // --- tilemap collision ---
         int ts = tilemap.tileSize * tilemap.renderScale;
 
@@ -147,10 +134,7 @@ void Game::update(const Uint8* keys, float dt) {
 }
 
 void Game::render(SDL_Renderer* renderer) {
-    tilemap.render(renderer, camera);  // ← add this first
+    tilemap.render(renderer, camera);
 
-    for(const auto& box: boxes)
-        box.render(renderer, camera, textures.get("box"));
-
-    player.render(renderer, camera, textures.get("player"));
+    player.render(renderer, camera, textures);
 }

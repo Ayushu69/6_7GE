@@ -53,7 +53,7 @@ int main(int argc, char* argv[]) {
     bool running = true;
 
     Uint64 now = SDL_GetPerformanceCounter();
-    Uint64 last = 0;
+    Uint64 last = now;
     float dt = 0.0f;
 
     while (running) {

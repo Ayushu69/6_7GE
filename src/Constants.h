@@ -5,9 +5,9 @@ constexpr int   kWindowHeight = 720;
 
 // Tileset
 constexpr int kTileSize       = 16;
-constexpr int kTileMargin     = 1;
-constexpr int kTilesetColumns = 57;
-constexpr int kTilesetRows    = 30;
+constexpr int kTileMargin     = 0;
+constexpr int kTilesetColumns = 4;
+constexpr int kTilesetRows    = 1;
 constexpr int kRenderScale    = 3;
 
 // World in tiles

@@ -1,12 +1,45 @@
 #include "Player.h"
 #include "../Constants.h"
 #include "../core/Camera.h"
+#include "../core/TextureManager.h"
+
+Player::Player(int frameWidth, int frameHeight, int totalFrames, float frameDelay, int row)
+    : animator(frameWidth, frameHeight, totalFrames, frameDelay, row) {}
+
+void Player::setupAnimations() {
+    // Register all animation clips
+    // All sheets are single-row, 64x64 per frame
+    animator.addClip("idle", {64, 64, 4, 0.15f, true});   // 4 frames, slow
+    animator.addClip("walk", {64, 64, 6, 0.12f, true});   // 6 frames
+    animator.addClip("run",  {64, 64, 6, 0.08f, true});   // 6 frames, faster
+    animator.addClip("jump", {64, 64, 6, 0.10f, false});  // use run sheet, hold last frame
+
+    // Start with idle
+    animator.play("idle");
+}
+
+std::string Player::getAnimTexture() const {
+    switch (animState) {
+        case AnimState::Idle: return "anim_idle";
+        case AnimState::Walk: return "anim_walk";
+        case AnimState::Run:  return "anim_run";
+        case AnimState::Jump: return "anim_run";  // reuse run sheet for jump
+        default:              return "anim_idle";
+    }
+}
 
 void Player::update(const Uint8* keys, float dt) {
     float dx = 0.0f;
 
     if (keys[SDL_SCANCODE_A]) dx -= 1.0f;
     if (keys[SDL_SCANCODE_D]) dx += 1.0f;
+
+    // update facing direction
+    if (dx > 0.0f) facingRight = true;
+    else if (dx < 0.0f) facingRight = false;
+
+    // sprint state
+    isSprinting = keys[SDL_SCANCODE_LSHIFT] && dx != 0.0f;
 
     // horizontal acceleration
     if(dx != 0.0f) velX += dx * acceleration * dt;
@@ -30,11 +63,13 @@ void Player::update(const Uint8* keys, float dt) {
     //gravity
     velY += gravityAccel * dt;
 
-    // jump
-    if(keys[SDL_SCANCODE_SPACE] && onGround) {
+    // jump (edge-triggered: only on fresh press, not hold)
+    bool spaceNow = keys[SDL_SCANCODE_SPACE];
+    if(spaceNow && !wasSpacePressed && onGround) {
         velY = -jumpForce;
         onGround = false;
     }
+    wasSpacePressed = spaceNow;
 
     // move
     rect.x += velX * dt;
@@ -46,6 +81,31 @@ void Player::update(const Uint8* keys, float dt) {
     if (rect.y < 0.0f) { rect.y = 0.0f; velY = 0.0f; }
     if (rect.y + rect.h > kWorldTilesY * kTileSize * kRenderScale) { rect.y = kWorldTilesY * kTileSize * kRenderScale - rect.h; velY = 0.0f; }
 
+    // ── Determine animation state ────────────────────────────
+    AnimState newState;
+    if (!onGround) {
+        newState = AnimState::Jump;
+    } else if (dx != 0.0f && isSprinting) {
+        newState = AnimState::Run;
+    } else if (dx != 0.0f) {
+        newState = AnimState::Walk;
+    } else {
+        newState = AnimState::Idle;
+    }
+
+    // Switch clip if state changed
+    if (newState != animState) {
+        animState = newState;
+        switch (animState) {
+            case AnimState::Idle: animator.play("idle"); break;
+            case AnimState::Walk: animator.play("walk"); break;
+            case AnimState::Run:  animator.play("run");  break;
+            case AnimState::Jump: animator.play("jump"); break;
+        }
+    }
+
+    animator.update(dt);
+
     // sync collider
     colliderRect = {
         rect.x + 5.0f,
@@ -53,74 +113,9 @@ void Player::update(const Uint8* keys, float dt) {
         rect.w - 10.0f,
         rect.h - 10.0f
     };
-
-    // reset onGround, will be set again during collision resolution if still colliding with ground
-    onGround = false;
 }
 
-//     //Normalize input
-//     const float lenSq = dx*dx + dy*dy;
-//     if(lenSq > 1.0f){
-//         const float len = SDL_sqrtf(lenSq);
-//         dx /= len;
-//         dy /= len;
-//     }
-
-//     // acceleration
-//     if(dx != 0) velX += dx*acceleration*dt;
-//     if(dy != 0) velY += dy*acceleration*dt;
-
-//     // friction
-//     if(dx == 0){
-//         if(velX > 0){
-//             velX -= friction * dt;
-//             if(velX < 0) velX = 0;
-//         }
-//         else if(velX < 0){
-//             velX += friction * dt;
-//             if(velX > 0) velX = 0;
-//         }
-//     }
-
-//     if(dy == 0){
-//         if(velY > 0){
-//             velY -= friction * dt;
-//             if(velY < 0) velY = 0;
-//         }
-//         else if(velY < 0){
-//             velY += friction * dt;
-//             if(velY > 0) velY = 0;
-//         }
-//     }
-
-//     // clamp
-//     if(velX > maxSpeed) velX = maxSpeed;
-//     if(velX < -maxSpeed) velX = -maxSpeed;
-
-//     if(velY > maxSpeed) velY = maxSpeed;
-//     if(velY < -maxSpeed) velY = -maxSpeed;
-
-//     // move
-//     rect.x += velX * dt;
-//     rect.y += velY * dt;
-
-//     // bounds
-//     if (rect.x < 0.0f) { rect.x = 0.0f; velX = 0.0f; }
-//     if (rect.y < 0.0f) { rect.y = 0.0f; velY = 0.0f; }
-//     if (rect.x + rect.w > kWorldTilesX * kTileSize * kRenderScale) { rect.x = kWorldTilesX * kTileSize * kRenderScale - rect.w; velX = 0.0f; }
-//     if (rect.y + rect.h > kWorldTilesY * kTileSize * kRenderScale) { rect.y = kWorldTilesY * kTileSize * kRenderScale - rect.h; velY = 0.0f; }
-
-//     // after moving rect, sync collider
-//     float insetX = 5.0f, insetY = 5.0f;
-//     colliderRect = {
-//         rect.x + insetX,
-//         rect.y + insetY,
-//         rect.w - insetX * 2,
-//         rect.h - insetY * 2
-//     };
-// }
-
-void Player::render(SDL_Renderer* renderer, const Camera& camera, SDL_Texture* tex) const {
+void Player::render(SDL_Renderer* renderer, const Camera& camera, const TextureManager& textures) const {
     SDL_FRect screenRect = {
         rect.x - camera.x,
         rect.y - camera.y,
@@ -128,9 +123,13 @@ void Player::render(SDL_Renderer* renderer, const Camera& camera, SDL_Texture* t
         rect.h
     };
 
+    // Get the right texture for the current animation state
+    SDL_Texture* tex = textures.get(getAnimTexture());
+
     if (tex) {
-        SDL_RenderCopyF(renderer, tex, nullptr, &screenRect);
-        // nullptr for src means "use the whole texture"
+        SDL_Rect src = animator.getSrcRect();
+        SDL_RendererFlip flip = facingRight ? SDL_FLIP_NONE : SDL_FLIP_HORIZONTAL;
+        SDL_RenderCopyExF(renderer, tex, &src, &screenRect, 0.0, nullptr, flip);
     } else {
         // fallback to colored rect if no texture
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
