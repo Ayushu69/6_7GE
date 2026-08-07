@@ -43,7 +43,9 @@ bool Game::handleEvents() {
         if (event.type == SDL_QUIT) return false;
         if (event.type == SDL_KEYDOWN)
             if (event.key.keysym.sym == SDLK_ESCAPE) return false;
+
         if (event.type == SDL_MOUSEBUTTONDOWN){
+            // Left click to break a tile
             if (event.button.button == SDL_BUTTON_LEFT) {
                 float worldX = event.button.x + camera.x;
                 float worldY = event.button.y + camera.y;
@@ -76,17 +78,37 @@ bool Game::handleEvents() {
                     }
                 }
             }
-        }
-        if (event.type == SDL_MOUSEBUTTONDOWN){
+
+            // Right click to place a tile
             if (event.button.button == SDL_BUTTON_RIGHT) {
                 float worldX = event.button.x + camera.x;
                 float worldY = event.button.y + camera.y;
-
+                
                 int col = (int)(worldX) / (tilemap.tileSize * tilemap.renderScale);
                 int row = (int)(worldY) / (tilemap.tileSize * tilemap.renderScale);
 
-                if (row >= 0 && row < tilemap.rows && col >= 0 && col < tilemap.cols) tilemap.mapData[row][col] = 1;
+                if(row >= 0 && row < tilemap.rows && col >= 0 && col < tilemap.cols) {
+                    InventorySlot& slot = player.hotbar[player.selectedSlot];
+                    if (slot.tileID != 0 && slot.count > 0) {
+                        tilemap.mapData[row][col] = slot.tileID;
+                        slot.count--;
+                        if (slot.count == 0) slot.tileID = 0;
+                    }
+                }
             }
+        }
+
+        if (event.type == SDL_KEYDOWN && mode == GameMode::Gameplay) {
+            if (event.key.keysym.sym >= SDLK_1 && event.key.keysym.sym <= SDLK_9) {
+                player.selectedSlot = event.key.keysym.sym - SDLK_1;
+            } else if (event.key.keysym.sym == SDLK_0) {
+                player.selectedSlot = 9; // 0 selects the 10th slot (index 9)
+            }
+        }
+        
+        if(event.type == SDL_MOUSEWHEEL && mode == GameMode::Gameplay) {
+            player.selectedSlot -= event.wheel.y;
+            player.selectedSlot = ((player.selectedSlot % 10) + 10) % 10;
         }
     }
     return true;

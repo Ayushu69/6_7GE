@@ -45,4 +45,5 @@ struct Player {
     std::string getAnimTexture() const;
 
     std::array<InventorySlot, 10> hotbar; // 10 slots for building blocks
+    int selectedSlot = 0; // Index of the currently selected hotbar slot
 };
