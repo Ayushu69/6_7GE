@@ -213,10 +213,13 @@ void Game::renderHotbar(SDL_Renderer* renderer) {
     int totalWidth = player.hotbar.size() * slotSize + (player.hotbar.size() - 1) * padding;
     int x = (kWindowWidth - totalWidth) / 2;
     int y = kWindowHeight - slotSize - padding;
-    for (const auto& slot : player.hotbar) {
+    for (int i = 0; i < player.hotbar.size(); i++) {
+        const InventorySlot& slot = player.hotbar[i];
         SDL_Rect rect = {x, y, slotSize, slotSize};
+
         SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
         SDL_RenderFillRect(renderer, &rect);
+
         if(slot.tileID != 0 && slot.count > 0) {
             SDL_Texture* tex = textures.get("tileset");
             if(tex) {
@@ -227,8 +230,14 @@ void Game::renderHotbar(SDL_Renderer* renderer) {
                 SDL_RenderCopy(renderer, tex, &src, &rect);            
             }
         }
-        x += slotSize + padding;
-        SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
+
+        if(i == player.selectedSlot) {
+            SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+        }else{
+            SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
+        }
         SDL_RenderDrawRect(renderer, &rect);
+
+        x += slotSize + padding;
     }
 }
