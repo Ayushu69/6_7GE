@@ -9,6 +9,11 @@ Game::Game(SDL_Renderer* renderer)
       player(64, 64, 4, 0.15f) {
     textures.init();
 
+    hotbarFont = TTF_OpenFont("assets/fonts/PressStart2P.ttf", 12);
+    if(hotbarFont == nullptr) {
+        SDL_Log("TTF_OpenFont failed: %s", TTF_GetError());
+    }
+
     // Load all player animation sheets
     textures.load(renderer, "anim_idle", "assets/Idle_Side-Sheet.png");
     textures.load(renderer, "anim_walk", "assets/Walk_Side-Sheet.png");
@@ -34,6 +39,72 @@ Game::Game(SDL_Renderer* renderer)
             player.rect.y = static_cast<float>(row * ts) - player.rect.h - 4.0f;
             break;
         }
+    }
+}
+
+Game::~Game() {
+    textures.shutdown();
+    TTF_CloseFont(hotbarFont);
+}
+
+SDL_Texture* Game::renderText(SDL_Renderer* renderer, const std::string& text, SDL_Color color) {
+    SDL_Surface* surface = TTF_RenderText_Solid(hotbarFont, text.c_str(), color);
+    if (surface == nullptr) {
+        SDL_Log("TTF_RenderText_Solid failed: %s", TTF_GetError());
+        return nullptr;
+    }
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_FreeSurface(surface);
+    if (texture == nullptr) {
+        SDL_Log("SDL_CreateTextureFromSurface failed: %s", SDL_GetError());
+        return nullptr;
+    }
+    return texture;
+}
+
+void Game::renderHotbar(SDL_Renderer* renderer) {
+    int slotSize = 48;
+    int padding = 8;
+    int totalWidth = player.hotbar.size() * slotSize + (player.hotbar.size() - 1) * padding;
+    int x = (kWindowWidth - totalWidth) / 2;
+    int y = kWindowHeight - slotSize - padding;
+    for (int i = 0; i < player.hotbar.size(); i++) {
+        const InventorySlot& slot = player.hotbar[i];
+        SDL_Rect rect = {x, y, slotSize, slotSize};
+
+        SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
+        SDL_RenderFillRect(renderer, &rect);
+
+        if(slot.tileID != 0 && slot.count > 0) {
+            SDL_Texture* tex = textures.get("tileset");
+            if(tex) {
+                int ts = tilemap.tileSize;
+                int tileX = (slot.tileID % tilemap.sheetCols) * ts;
+                int tileY = (slot.tileID / tilemap.sheetCols) * ts;
+                SDL_Rect src = { tileX, tileY, ts, ts };
+                SDL_RenderCopy(renderer, tex, &src, &rect);
+
+                std::string countText = std::to_string(slot.count);
+                SDL_Texture* countTex = renderText(renderer, countText, {255, 255, 255, 255});
+                if(countTex != nullptr) {
+                    int textW, textH;
+                    SDL_QueryTexture(countTex, nullptr, nullptr, &textW, &textH);
+                    SDL_Rect destRect = {x + slotSize - textW - 4, y + slotSize - textH - 4, textW, textH};
+                    SDL_RenderCopy(renderer, countTex, nullptr, &destRect);
+                    SDL_DestroyTexture(countTex);
+                }
+
+            }
+        }
+
+        if(i == player.selectedSlot) {
+            SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+        }else{
+            SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
+        }
+        SDL_RenderDrawRect(renderer, &rect);
+
+        x += slotSize + padding;
     }
 }
 
@@ -205,39 +276,4 @@ void Game::render(SDL_Renderer* renderer) {
 
     player.render(renderer, camera, textures);
     renderHotbar(renderer);
-}
-
-void Game::renderHotbar(SDL_Renderer* renderer) {
-    int slotSize = 48;
-    int padding = 8;
-    int totalWidth = player.hotbar.size() * slotSize + (player.hotbar.size() - 1) * padding;
-    int x = (kWindowWidth - totalWidth) / 2;
-    int y = kWindowHeight - slotSize - padding;
-    for (int i = 0; i < player.hotbar.size(); i++) {
-        const InventorySlot& slot = player.hotbar[i];
-        SDL_Rect rect = {x, y, slotSize, slotSize};
-
-        SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
-        SDL_RenderFillRect(renderer, &rect);
-
-        if(slot.tileID != 0 && slot.count > 0) {
-            SDL_Texture* tex = textures.get("tileset");
-            if(tex) {
-                int ts = tilemap.tileSize;
-                int tileX = (slot.tileID % tilemap.sheetCols) * ts;
-                int tileY = (slot.tileID / tilemap.sheetCols) * ts;
-                SDL_Rect src = { tileX, tileY, ts, ts };
-                SDL_RenderCopy(renderer, tex, &src, &rect);            
-            }
-        }
-
-        if(i == player.selectedSlot) {
-            SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
-        }else{
-            SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
-        }
-        SDL_RenderDrawRect(renderer, &rect);
-
-        x += slotSize + padding;
-    }
 }

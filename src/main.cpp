@@ -73,7 +73,6 @@ int main(int argc, char* argv[]) {
         render(renderer, game);
     }
     
-    game.textures.shutdown();
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     TTF_Quit();
