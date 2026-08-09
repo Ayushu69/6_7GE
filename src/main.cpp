@@ -1,5 +1,6 @@
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include "Constants.h"
 #include "core/Game.h"
 
@@ -18,6 +19,11 @@ int main(int argc, char* argv[]) {
     // 1) SDL init check
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         SDL_Log("SDL_Init failed: %s", SDL_GetError());
+        return 1;
+    }
+
+    if(TTF_Init() != 0) {
+        SDL_Log("TTF_Init failed: %s", TTF_GetError());
         return 1;
     }
 
@@ -70,6 +76,7 @@ int main(int argc, char* argv[]) {
     game.textures.shutdown();
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+    TTF_Quit();
     SDL_Quit();
     
     return 0;
