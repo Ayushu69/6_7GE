@@ -32,9 +32,6 @@ struct Player {
     bool facingRight = true;
     bool isSprinting = false;
 
-    static constexpr float kColliderWidth = 18.0f;
-    static constexpr float kColliderHeight = 40.0f;
-
     AnimState animState = AnimState::Idle;
     Animator animator;
 

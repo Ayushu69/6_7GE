@@ -221,10 +221,10 @@ void Game::update(const Uint8* keys, float dt) {
         }
 
         player.colliderRect = {
-            player.rect.x + (player.rect.w - Player::kColliderWidth) * 0.5f,
-            player.rect.y + (player.rect.h - Player::kColliderHeight) * 0.5f,
-            Player::kColliderWidth,
-            Player::kColliderHeight
+            player.rect.x + (player.rect.w - kColliderWidth) * 0.5f,
+            player.rect.y + (player.rect.h - kColliderHeight) * 0.5f,
+            kColliderWidth,
+            kColliderHeight
         };
         {
             int startCol = static_cast<int>(player.colliderRect.x) / ts - 1;
@@ -253,10 +253,10 @@ void Game::update(const Uint8* keys, float dt) {
                     player.velX = 0;
 
                     player.colliderRect = {
-                        player.rect.x + (player.rect.w - Player::kColliderWidth) * 0.5f,
-                        player.rect.y + (player.rect.h - Player::kColliderHeight) * 0.5f,
-                        Player::kColliderWidth,
-                        Player::kColliderHeight
+                        player.rect.x + (player.rect.w - kColliderWidth) * 0.5f,
+                        player.rect.y + (player.rect.h - kColliderHeight) * 0.5f,
+                        kColliderWidth,
+                        kColliderHeight
                     };
                 }
             }
@@ -276,10 +276,10 @@ void Game::update(const Uint8* keys, float dt) {
             player.onGround = true; // landed on the ground
         }
         player.colliderRect = {
-            player.rect.x + (player.rect.w - Player::kColliderWidth) * 0.5f,
-            player.rect.y + (player.rect.h - Player::kColliderHeight) * 0.5f,
-            Player::kColliderWidth,
-            Player::kColliderHeight
+            player.rect.x + (player.rect.w - kColliderWidth) * 0.5f,
+            player.rect.y + (player.rect.h - kColliderHeight) * 0.5f,
+            kColliderWidth,
+            kColliderHeight
         };
         {
             int startCol = static_cast<int>(player.colliderRect.x) / ts - 1;
@@ -312,10 +312,10 @@ void Game::update(const Uint8* keys, float dt) {
                     player.velY = 0;
 
                     player.colliderRect = {
-                        player.rect.x + (player.rect.w - Player::kColliderWidth) * 0.5f,
-                        player.rect.y + (player.rect.h - Player::kColliderHeight) * 0.5f,
-                        Player::kColliderWidth, 
-                        Player::kColliderHeight
+                        player.rect.x + (player.rect.w - kColliderWidth) * 0.5f,
+                        player.rect.y + (player.rect.h - kColliderHeight) * 0.5f,
+                        kColliderWidth, 
+                        kColliderHeight
                     };
                 }
             }
@@ -332,14 +332,16 @@ void Game::render(SDL_Renderer* renderer) {
 
     player.render(renderer, camera, textures);
 
-    SDL_FRect debugRect = {
-    player.colliderRect.x - camera.x,
-    player.colliderRect.y - camera.y,
-    player.colliderRect.w,
-    player.colliderRect.h
-    };
-    SDL_SetRenderDrawColor(renderer, 255, 0, 255, 255);
-    SDL_RenderDrawRectF(renderer, &debugRect);
+    if(kDebugDrawColliders) {
+        SDL_FRect debugRect = {
+            player.colliderRect.x - camera.x,
+            player.colliderRect.y - camera.y,
+            player.colliderRect.w,
+            player.colliderRect.h
+        };
+        SDL_SetRenderDrawColor(renderer, 255, 0, 255, 255);
+        SDL_RenderDrawRectF(renderer, &debugRect);
+    }
 
     renderHotbar(renderer);
 }
