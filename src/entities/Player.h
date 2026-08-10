@@ -34,6 +34,7 @@ struct Player {
 
     static constexpr float kPlayerColliderWidth = 18.0f;
     static constexpr float kPlayerColliderHeight = 40.0f;
+    static constexpr float kFeetPaddingBelowSprite = 16.0f;
 
     void syncCollider();
 

@@ -98,9 +98,10 @@ void Player::update(const Uint8* keys, float dt) {
 }
 
 void Player::syncCollider() {
+    float feetY = rect.y + rect.h - kFeetPaddingBelowSprite;
     colliderRect = {
         rect.x + (rect.w - kPlayerColliderWidth) * 0.5f,
-        rect.y + (rect.h - kPlayerColliderHeight) * 0.5f,
+        feetY - kPlayerColliderHeight,
         kPlayerColliderWidth,
         kPlayerColliderHeight
     };
