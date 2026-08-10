@@ -71,16 +71,6 @@ void Player::update(const Uint8* keys, float dt) {
     }
     wasSpacePressed = spaceNow;
 
-    // move
-    rect.x += velX * dt;
-    rect.y += velY * dt;
-
-    // world bounds
-    if (rect.x < 0.0f) { rect.x = 0.0f; velX = 0.0f; }
-    if (rect.x + rect.w > kWorldTilesX * kTileSize * kRenderScale) { rect.x = kWorldTilesX * kTileSize * kRenderScale - rect.w; velX = 0.0f; }
-    if (rect.y < 0.0f) { rect.y = 0.0f; velY = 0.0f; }
-    if (rect.y + rect.h > kWorldTilesY * kTileSize * kRenderScale) { rect.y = kWorldTilesY * kTileSize * kRenderScale - rect.h; velY = 0.0f; }
-
     // ── Determine animation state ────────────────────────────
     AnimState newState;
     if (!onGround) {
@@ -105,14 +95,6 @@ void Player::update(const Uint8* keys, float dt) {
     }
 
     animator.update(dt);
-
-    // sync collider
-    colliderRect = {
-        rect.x + 5.0f,
-        rect.y + 5.0f,
-        rect.w - 10.0f,
-        rect.h - 10.0f
-    };
 }
 
 void Player::render(SDL_Renderer* renderer, const Camera& camera, const TextureManager& textures) const {
