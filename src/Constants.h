@@ -14,7 +14,4 @@ constexpr int kRenderScale    = 3;
 constexpr int kWorldTilesX = 200;
 constexpr int kWorldTilesY = 100;
 
-static constexpr float kColliderWidth = 18.0f;
-static constexpr float kColliderHeight = 40.0f;
-
 constexpr bool kDebugDrawColliders = true; // set to false to disable debug collider rendering
