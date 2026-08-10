@@ -220,12 +220,7 @@ void Game::update(const Uint8* keys, float dt) {
             player.velX = 0.0f;
         }
 
-        player.colliderRect = {
-            player.rect.x + (player.rect.w - Player::kPlayerColliderWidth) * 0.5f,
-            player.rect.y + (player.rect.h - Player::kPlayerColliderHeight) * 0.5f,
-            Player::kPlayerColliderWidth,
-            Player::kPlayerColliderHeight
-        };
+        player.syncCollider(); // update collider after moving
         {
             int startCol = static_cast<int>(player.colliderRect.x) / ts - 1;
             int startRow = static_cast<int>(player.colliderRect.y) / ts - 1;
@@ -252,12 +247,7 @@ void Game::update(const Uint8* keys, float dt) {
                     else player.rect.x += overlapRight;
                     player.velX = 0;
 
-                    player.colliderRect = {
-                        player.rect.x + (player.rect.w - Player::kPlayerColliderWidth) * 0.5f,
-                        player.rect.y + (player.rect.h - Player::kPlayerColliderHeight) * 0.5f,
-                        Player::kPlayerColliderWidth,
-                        Player::kPlayerColliderHeight
-                    };
+                    player.syncCollider(); // update collider after resolving collision
                 }
             }
         }
@@ -275,12 +265,7 @@ void Game::update(const Uint8* keys, float dt) {
             player.velY = 0.0f;
             player.onGround = true; // landed on the ground
         }
-        player.colliderRect = {
-            player.rect.x + (player.rect.w - Player::kPlayerColliderWidth) * 0.5f,
-            player.rect.y + (player.rect.h - Player::kPlayerColliderHeight) * 0.5f,
-            Player::kPlayerColliderWidth,
-            Player::kPlayerColliderHeight
-        };
+        player.syncCollider(); // update collider after moving
         {
             int startCol = static_cast<int>(player.colliderRect.x) / ts - 1;
             int startRow = static_cast<int>(player.colliderRect.y) / ts - 1;
@@ -311,12 +296,7 @@ void Game::update(const Uint8* keys, float dt) {
                     }
                     player.velY = 0;
 
-                    player.colliderRect = {
-                        player.rect.x + (player.rect.w - Player::kPlayerColliderWidth) * 0.5f,
-                        player.rect.y + (player.rect.h - Player::kPlayerColliderHeight) * 0.5f,
-                        Player::kPlayerColliderWidth, 
-                        Player::kPlayerColliderHeight
-                    };
+                    player.syncCollider(); // update collider after resolving collision
                 }
             }
         }

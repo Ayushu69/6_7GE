@@ -97,6 +97,15 @@ void Player::update(const Uint8* keys, float dt) {
     animator.update(dt);
 }
 
+void Player::syncCollider() {
+    colliderRect = {
+        rect.x + (rect.w - kPlayerColliderWidth) * 0.5f,
+        rect.y + (rect.h - kPlayerColliderHeight) * 0.5f,
+        kPlayerColliderWidth,
+        kPlayerColliderHeight
+    };
+}
+
 void Player::render(SDL_Renderer* renderer, const Camera& camera, const TextureManager& textures) const {
     SDL_FRect screenRect = {
         rect.x - camera.x,
