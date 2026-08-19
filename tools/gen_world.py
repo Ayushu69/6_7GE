@@ -22,10 +22,10 @@ COLS = 200
 ROWS = 100
 
 # ─── Tile IDs ──────────────────────────────────────────────────────────
-SKY   = 0
-GRASS = 1
-DIRT  = 2
-STONE = 3
+SKY   = -1
+GRASS = 0
+DIRT  = 1
+STONE = 2
 
 # ─── Perlin Noise (pure-Python, no dependencies) ──────────────────────
 

@@ -28,7 +28,7 @@ Game::Game(SDL_Renderer* renderer)
     tilemap.tileSize  = kTileSize;
     tilemap.sheetCols = kTilesetColumns;
     tilemap.loadFromCSV("assets/world.csv");
-    tilemap.tileset = textures.load(renderer, "tileset", "assets/tileset.png");
+    tilemap.tileset = textures.load(renderer, "surface", "assets/surface.png");
 
     // Find surface at player's column and spawn above it
     int ts = tilemap.tileSize * tilemap.renderScale;
@@ -75,8 +75,8 @@ void Game::renderHotbar(SDL_Renderer* renderer) {
         SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
         SDL_RenderFillRect(renderer, &rect);
 
-        if(slot.tileID != 0 && slot.count > 0) {
-            SDL_Texture* tex = textures.get("tileset");
+        if(slot.count > 0) {
+            SDL_Texture* tex = textures.get("surface");
             if(tex) {
                 int ts = tilemap.tileSize;
                 int tileX = (slot.tileID % tilemap.sheetCols) * ts;
@@ -127,7 +127,7 @@ bool Game::handleEvents() {
                 int brokenID = tilemap.mapData[row][col];
 
 
-                if (row >= 0 && row < tilemap.rows && col >= 0 && col < tilemap.cols) tilemap.mapData[row][col] = 0;
+                if (row >= 0 && row < tilemap.rows && col >= 0 && col < tilemap.cols) tilemap.mapData[row][col] = -1; // set to sky (empty)
 
                 bool found = false;
                 for (auto& slot : player.hotbar) {
@@ -141,7 +141,7 @@ bool Game::handleEvents() {
                 if (!found) {
                     // Item not in hotbar, add to first empty slot
                     for (auto& slot : player.hotbar) {
-                        if (slot.tileID == 0 && slot.count == 0) {
+                        if (slot.count == 0) {
                             slot.tileID = brokenID;
                             slot.count = 1;
                             break;
@@ -160,7 +160,7 @@ bool Game::handleEvents() {
 
                 if(row >= 0 && row < tilemap.rows && col >= 0 && col < tilemap.cols) {
                     InventorySlot& slot = player.hotbar[player.selectedSlot];
-                    if (slot.tileID != 0 && slot.count > 0) {
+                    if (slot.count > 0) {
                         tilemap.mapData[row][col] = slot.tileID;
                         slot.count--;
                         if (slot.count == 0) slot.tileID = 0;

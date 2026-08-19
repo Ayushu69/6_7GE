@@ -82,6 +82,6 @@ void Tilemap::render(SDL_Renderer* renderer, const Camera& camera) const {
 }
 
 bool Tilemap::isSolid(int tileID) const {
-    // 0 = sky (not solid), 1+ = solid blocks (grass, dirt, rock)
-    return tileID > 0;
+    // -1 = sky (not solid), 0+ = solid blocks (grass, dirt, rock)
+    return tileID >= 0;
 }
