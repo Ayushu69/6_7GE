@@ -344,6 +344,8 @@ void Game::render(SDL_Renderer* renderer) {
         if(stage > 3) stage = 3;
         SDL_Rect srcRect = { stage * 16, 0, 16, 16 };
         SDL_FRect dstRect = tilemap.getTileRect(miningProgress.col, miningProgress.row);
+        dstRect.x -= camera.x;
+        dstRect.y -= camera.y;
         SDL_RenderCopyF(renderer, textures.get("cracks"), &srcRect, &dstRect);
     }
 
