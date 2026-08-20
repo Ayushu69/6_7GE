@@ -2,13 +2,21 @@
 #include<SDL2/SDL.h>
 #include<string>
 #include<vector>
+#include<unordered_map>
 #include "Camera.h"
-
+struct TileProperties {
+    int hardness = 1;
+    int dropID = -1;
+};
 struct Tilemap{
+    Tilemap();
     int tileSize = 16;
     int renderScale = kRenderScale;
     int cols = 0;
     int rows = 0;
+
+    std::unordered_map<int, TileProperties> tileProperties; // Map of tileID to its properties
+    TileProperties getTileProperties(int tileID) const;
 
     std::vector<std::vector<int>> mapData;
 

@@ -13,7 +13,9 @@ Game::Game(SDL_Renderer* renderer)
     if(hotbarFont == nullptr) {
         SDL_Log("TTF_OpenFont failed: %s", TTF_GetError());
     }
-
+    //load cracks sprite
+    SDL_Texture *crackTex = textures.load(renderer, "cracks", "assets/cracks.png");
+    SDL_SetTextureBlendMode(crackTex, SDL_BLENDMODE_BLEND);
     // Load all player animation sheets
     textures.load(renderer, "anim_idle", "assets/Idle_Side-Sheet.png");
     textures.load(renderer, "anim_walk", "assets/Walk_Side-Sheet.png");
@@ -124,27 +126,44 @@ bool Game::handleEvents() {
                 int col = (int)(worldX) / (tilemap.tileSize * tilemap.renderScale);
                 int row = (int)(worldY) / (tilemap.tileSize * tilemap.renderScale);
 
-                int brokenID = tilemap.mapData[row][col];
+                if (row >= 0 && row < tilemap.rows && col >= 0 && col < tilemap.cols) {
+                    int brokenID = tilemap.mapData[row][col];
 
+                    if(brokenID >= 0) { // Only break solid tiles
+                        // Track mining progress for this tile
+                        if(miningProgress.row == row && miningProgress.col == col) {
+                            miningProgress.hitsSoFar++;
+                        }else{
+                            miningProgress = {row, col , 1, 0.0f};
+                        }
+                        miningProgress.timeSinceLastHit = 0.0f; // reset timer
 
-                if (row >= 0 && row < tilemap.rows && col >= 0 && col < tilemap.cols) tilemap.mapData[row][col] = -1; // set to sky (empty)
+                        TileProperties props = tilemap.getTileProperties(brokenID);
+                        
+                        if(miningProgress.hitsSoFar >= props.hardness) {
+                            //actually break the tile
+                            tilemap.mapData[row][col] = -1;
+                            miningProgress = {-1, -1, 0}; // reset mining progress
 
-                bool found = false;
-                for (auto& slot : player.hotbar) {
-                    if (slot.tileID == brokenID) {
-                        // Add to inventory (simple stack, no max count for demo)
-                        slot.count += 1;
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    // Item not in hotbar, add to first empty slot
-                    for (auto& slot : player.hotbar) {
-                        if (slot.count == 0) {
-                            slot.tileID = brokenID;
-                            slot.count = 1;
-                            break;
+                            bool found = false;
+                            for (auto& slot : player.hotbar) {
+                                if (slot.tileID == brokenID) {
+                                    // Add to inventory (simple stack, no max count for demo)
+                                    slot.count += 1;
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (!found) {
+                                // Item not in hotbar, add to first empty slot
+                                for (auto& slot : player.hotbar) {
+                                    if (slot.count == 0) {
+                                        slot.tileID = brokenID;
+                                        slot.count = 1;
+                                        break;
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -159,11 +178,13 @@ bool Game::handleEvents() {
                 int row = (int)(worldY) / (tilemap.tileSize * tilemap.renderScale);
 
                 if(row >= 0 && row < tilemap.rows && col >= 0 && col < tilemap.cols) {
-                    InventorySlot& slot = player.hotbar[player.selectedSlot];
-                    if (slot.count > 0) {
-                        tilemap.mapData[row][col] = slot.tileID;
-                        slot.count--;
-                        if (slot.count == 0) slot.tileID = 0;
+                    if(tilemap.mapData[row][col] == -1) {
+                        InventorySlot& slot = player.hotbar[player.selectedSlot];
+                        if (slot.count > 0) {
+                            tilemap.mapData[row][col] = slot.tileID;
+                            slot.count--;
+                            if (slot.count == 0) slot.tileID = 0;
+                        }
                     }
                 }
             }
@@ -301,6 +322,12 @@ void Game::update(const Uint8* keys, float dt) {
             }
         }
     }
+    if(miningProgress.row != -1 && miningProgress.col != -1) {
+        miningProgress.timeSinceLastHit += dt;
+        if(miningProgress.timeSinceLastHit > 1.5f) {
+            miningProgress = {-1, -1, 0, 0.0f}; // reset mining progress after 1 second of inactivity
+        }
+    }
     camera.update(
         player.rect.x + player.rect.w * 0.5f,
         player.rect.y + player.rect.h * 0.5f
@@ -309,6 +336,16 @@ void Game::update(const Uint8* keys, float dt) {
 
 void Game::render(SDL_Renderer* renderer) {
     tilemap.render(renderer, camera);
+    if(miningProgress.row != -1 && miningProgress.col != -1) {
+        int tileID = tilemap.mapData[miningProgress.row][miningProgress.col];
+        TileProperties props = tilemap.getTileProperties(tileID);
+        float progress = (float)miningProgress.hitsSoFar / props.hardness;
+        int stage = (int)(progress * 4); // 0 to 4
+        if(stage > 3) stage = 3;
+        SDL_Rect srcRect = { stage * 16, 0, 16, 16 };
+        SDL_FRect dstRect = tilemap.getTileRect(miningProgress.col, miningProgress.row);
+        SDL_RenderCopyF(renderer, textures.get("cracks"), &srcRect, &dstRect);
+    }
 
     player.render(renderer, camera, textures);
 

@@ -4,6 +4,15 @@
 #include<sstream>
 #include<SDL2/SDL.h>
 
+Tilemap::Tilemap() {
+    tileProperties[0] = { 2, 1 };  // grass: 2 hits, drops dirt
+    tileProperties[1] = { 2, 1 };  // dirt: 2 hits, drops dirt
+    tileProperties[2] = { 4, 2 };  // stone: 4 hits, drops stone
+    tileProperties[3] = { 3, 3 };  // wood planks: 3 hits, drops itself
+    tileProperties[4] = { 6, 4 };  // brick: 6 hits, drops itself
+    tileProperties[5] = { 6, 5 };  // cobblestone: 6 hits, drops itself
+}
+
 bool Tilemap::loadFromCSV(const std::string& path) {
     std::ifstream file(path);
     if(!file.is_open()){
@@ -84,4 +93,12 @@ void Tilemap::render(SDL_Renderer* renderer, const Camera& camera) const {
 bool Tilemap::isSolid(int tileID) const {
     // -1 = sky (not solid), 0+ = solid blocks (grass, dirt, rock)
     return tileID >= 0;
+}
+
+TileProperties Tilemap::getTileProperties(int tileID) const {
+    auto it = tileProperties.find(tileID);
+    if(it != tileProperties.end()){
+        return it->second;
+    }
+    return TileProperties{1, tileID};
 }

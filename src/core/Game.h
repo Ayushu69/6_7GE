@@ -33,4 +33,10 @@ public:
 private:
     TTF_Font* hotbarFont = nullptr;
     SDL_Texture* renderText(SDL_Renderer* renderer, const std::string& text, SDL_Color color); // Helper function to render text to a texture
+    struct MiningProgress {
+        int row = -1, col = -1;
+        int hitsSoFar = 0;
+        float timeSinceLastHit = 0.0f;
+    };
+    MiningProgress miningProgress; // Track the current mining progress
 };
