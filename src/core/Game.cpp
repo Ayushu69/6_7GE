@@ -127,40 +127,54 @@ bool Game::handleEvents() {
                 int row = (int)(worldY) / (tilemap.tileSize * tilemap.renderScale);
 
                 if (row >= 0 && row < tilemap.rows && col >= 0 && col < tilemap.cols) {
+                    float playerCenterX = player.rect.x + player.rect.w * 0.5f;
+                    float playerCenterY = player.rect.y + player.rect.h * 0.5f;
+
+                    SDL_FRect tileRect = tilemap.getTileRect(col, row);
+                    float tileCenterX = tileRect.x + tileRect.w * 0.5f;
+                    float tileCenterY = tileRect.y + tileRect.h * 0.5f;
+
+                    float dx = tileCenterX - playerCenterX;
+                    float dy = tileCenterY - playerCenterY;
+
+                    float distance = std::sqrt(dx*dx + dy*dy);
+
+                    if(distance <= kMaxReachPixels){
                     int brokenID = tilemap.mapData[row][col];
 
-                    if(brokenID >= 0) { // Only break solid tiles
-                        // Track mining progress for this tile
-                        if(miningProgress.row == row && miningProgress.col == col) {
-                            miningProgress.hitsSoFar++;
-                        }else{
-                            miningProgress = {row, col , 1, 0.0f};
-                        }
-                        miningProgress.timeSinceLastHit = 0.0f; // reset timer
-
-                        TileProperties props = tilemap.getTileProperties(brokenID);
-                        
-                        if(miningProgress.hitsSoFar >= props.hardness) {
-                            //actually break the tile
-                            tilemap.mapData[row][col] = -1;
-                            miningProgress = {-1, -1, 0}; // reset mining progress
-
-                            bool found = false;
-                            for (auto& slot : player.hotbar) {
-                                if (slot.tileID == brokenID) {
-                                    // Add to inventory (simple stack, no max count for demo)
-                                    slot.count += 1;
-                                    found = true;
-                                    break;
-                                }
+                        if(brokenID >= 0) { // Only break solid tiles
+                            // Track mining progress for this tile
+                            if(miningProgress.row == row && miningProgress.col == col) {
+                                miningProgress.hitsSoFar++;
+                            }else{
+                                miningProgress = {row, col , 1, 0.0f};
                             }
-                            if (!found) {
-                                // Item not in hotbar, add to first empty slot
+                            miningProgress.timeSinceLastHit = 0.0f; // reset timer
+
+                            TileProperties props = tilemap.getTileProperties(brokenID);
+                            
+                            if(miningProgress.hitsSoFar >= props.hardness) {
+                                //actually break the tile
+                                tilemap.mapData[row][col] = -1;
+                                miningProgress = {-1, -1, 0}; // reset mining progress
+
+                                bool found = false;
                                 for (auto& slot : player.hotbar) {
-                                    if (slot.count == 0) {
-                                        slot.tileID = brokenID;
-                                        slot.count = 1;
+                                    if (slot.tileID == brokenID) {
+                                        // Add to inventory (simple stack, no max count for demo)
+                                        slot.count += 1;
+                                        found = true;
                                         break;
+                                    }
+                                }
+                                if (!found) {
+                                    // Item not in hotbar, add to first empty slot
+                                    for (auto& slot : player.hotbar) {
+                                        if (slot.count == 0) {
+                                            slot.tileID = brokenID;
+                                            slot.count = 1;
+                                            break;
+                                        }
                                     }
                                 }
                             }
@@ -178,12 +192,26 @@ bool Game::handleEvents() {
                 int row = (int)(worldY) / (tilemap.tileSize * tilemap.renderScale);
 
                 if(row >= 0 && row < tilemap.rows && col >= 0 && col < tilemap.cols) {
-                    if(tilemap.mapData[row][col] == -1) {
-                        InventorySlot& slot = player.hotbar[player.selectedSlot];
-                        if (slot.count > 0) {
-                            tilemap.mapData[row][col] = slot.tileID;
-                            slot.count--;
-                            if (slot.count == 0) slot.tileID = 0;
+                    float playerCenterX = player.rect.x + player.rect.w * 0.5f;
+                    float playerCenterY = player.rect.y + player.rect.h * 0.5f;
+
+                    SDL_FRect tileRect = tilemap.getTileRect(col, row);
+                    float tileCenterX = tileRect.x + tileRect.w * 0.5f;
+                    float tileCenterY = tileRect.y + tileRect.h * 0.5f;
+
+                    float dx = tileCenterX - playerCenterX;
+                    float dy = tileCenterY - playerCenterY;
+
+                    float distance = std::sqrt(dx*dx + dy*dy);
+
+                    if(distance <= kMaxReachPixels) {
+                        if(tilemap.mapData[row][col] == -1) {
+                            InventorySlot& slot = player.hotbar[player.selectedSlot];
+                            if (slot.count > 0) {
+                                tilemap.mapData[row][col] = slot.tileID;
+                                slot.count--;
+                                if (slot.count == 0) slot.tileID = 0;
+                            }
                         }
                     }
                 }

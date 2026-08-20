@@ -8,6 +8,7 @@
 #include "../entities/Player.h"
 #include "TextureManager.h"
 #include "Tilemap.h"
+#include "../entities/DroppedItem.h"
 
 class Game {
 public:
@@ -15,6 +16,7 @@ public:
     Player player;
     Tilemap tilemap;
     Camera camera;
+    std::vector<DroppedItem> droppedItems;
 
     Game(SDL_Renderer* renderer);
     ~Game();

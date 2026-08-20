@@ -25,7 +25,7 @@ ROWS = 100
 SKY   = -1
 GRASS = 0
 DIRT  = 1
-STONE = 2
+COBBLESTONE = 2
 
 # ─── Perlin Noise (pure-Python, no dependencies) ──────────────────────
 
@@ -144,7 +144,7 @@ for col in range(COLS):
         elif row <= s + dirt_depth:
             world[row][col] = DIRT
         else:
-            world[row][col] = STONE
+            world[row][col] = COBBLESTONE
 
 # ─── 3) Cave generation ───────────────────────────────────────────────
 # Use two overlapping Perlin fields. Where both are near zero (narrow
@@ -177,7 +177,7 @@ for row in range(ROWS):
 # Natural-looking embedded dirt patches deep in stone.
 for row in range(ROWS):
     for col in range(COLS):
-        if world[row][col] != STONE:
+        if world[row][col] != COBBLESTONE:
             continue
         n = octave_noise2d(col * 0.1 + seed + 5000,
                            row * 0.1 + 5000, octaves=2)
@@ -188,12 +188,12 @@ for row in range(ROWS):
 # After cave carving, any solid tile with sky directly above becomes grass.
 for col in range(COLS):
     for row in range(1, ROWS):
-        if world[row][col] in (DIRT, STONE) and world[row - 1][col] == SKY:
+        if world[row][col] in (DIRT, COBBLESTONE) and world[row - 1][col] == SKY:
             world[row][col] = GRASS
 
 # ═══════════════════════════════════════════════════════════════════════
 #  WRITE OUTPUT
-# ═══════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════
 
 os.makedirs("assets", exist_ok=True)
 
@@ -207,7 +207,7 @@ for row in world:
     for t in row:
         counts[t] = counts.get(t, 0) + 1
 
-names = {SKY: "SKY", GRASS: "GRASS", DIRT: "DIRT", STONE: "STONE"}
+names = {SKY: "SKY", GRASS: "GRASS", DIRT: "DIRT", COBBLESTONE: "COBBLESTONE"}
 print(f"world.csv generated! ({COLS}x{ROWS})")
 for tid in sorted(counts):
     print(f"  {names.get(tid, str(tid)):>5}: {counts[tid]:>6} tiles")

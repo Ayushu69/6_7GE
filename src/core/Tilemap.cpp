@@ -7,10 +7,10 @@
 Tilemap::Tilemap() {
     tileProperties[0] = { 2, 1 };  // grass: 2 hits, drops dirt
     tileProperties[1] = { 2, 1 };  // dirt: 2 hits, drops dirt
-    tileProperties[2] = { 4, 2 };  // stone: 4 hits, drops stone
+    tileProperties[2] = { 4, 2 };  // cobblestone: 4 hits, drops stone
     tileProperties[3] = { 3, 3 };  // wood planks: 3 hits, drops itself
     tileProperties[4] = { 6, 4 };  // brick: 6 hits, drops itself
-    tileProperties[5] = { 6, 5 };  // cobblestone: 6 hits, drops itself
+    tileProperties[5] = { 6, 5 };  // cobblestone brick: 6 hits, drops itself
 }
 
 bool Tilemap::loadFromCSV(const std::string& path) {
