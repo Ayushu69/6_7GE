@@ -81,9 +81,7 @@ void Game::renderHotbar(SDL_Renderer* renderer) {
             SDL_Texture* tex = textures.get("surface");
             if(tex) {
                 int ts = tilemap.tileSize;
-                int tileX = (slot.tileID % tilemap.sheetCols) * ts;
-                int tileY = (slot.tileID / tilemap.sheetCols) * ts;
-                SDL_Rect src = { tileX, tileY, ts, ts };
+                SDL_Rect src = tilemap.getSrcRectForTile(slot.tileID);
                 SDL_RenderCopy(renderer, tex, &src, &rect);
 
                 std::string countText = std::to_string(slot.count);

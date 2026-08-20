@@ -35,4 +35,10 @@ struct Tilemap{
             static_cast<float>(tileSize * renderScale)
         };
     }
+
+    SDL_Rect getSrcRectForTile(int tileID) const {
+        int srcX = (tileID % sheetCols) * (tileSize + kTileMargin);
+        int srcY = (tileID / sheetCols) * (tileSize + kTileMargin);
+        return { srcX, srcY, tileSize, tileSize };
+    };
 };

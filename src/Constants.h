@@ -17,3 +17,5 @@ constexpr int kWorldTilesY = 100;
 constexpr bool kDebugDrawColliders = true; // set to false to disable debug collider rendering
 
 constexpr int kMaxReachPixels = 80; // maximum distance in tiles the player can reach to break/place blocks
+
+constexpr int kDroppedItemSize = 24;

@@ -76,10 +76,7 @@ void Tilemap::render(SDL_Renderer* renderer, const Camera& camera) const {
             };
 
             if (tileset && sheetCols > 0) {
-                // crop the right tile from spritesheet
-                int srcX = (tileID % sheetCols) * (tileSize + kTileMargin);
-                int srcY = (tileID / sheetCols) * (tileSize + kTileMargin);
-                SDL_Rect src = { srcX, srcY, tileSize, tileSize };
+                SDL_Rect src = getSrcRectForTile(tileID);
                 SDL_RenderCopyF(renderer, tileset, &src, &dst);
             } else {
                 // fallback: colored rect
