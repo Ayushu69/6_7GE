@@ -18,4 +18,6 @@ constexpr bool kDebugDrawColliders = true; // set to false to disable debug coll
 
 constexpr int kMaxReachPixels = 80; // maximum distance in tiles the player can reach to break/place blocks
 
-constexpr int kDroppedItemSize = 24;
+constexpr int kDroppedItemSize = 24; // size of dropped item in pixels (width and height)
+
+constexpr float kGravityAccel = 1800.0f;

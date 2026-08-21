@@ -41,4 +41,6 @@ private:
         float timeSinceLastHit = 0.0f;
     };
     MiningProgress miningProgress; // Track the current mining progress
+
+    void updateDroppedItems(float dt); // Update the physics and state of dropped items
 };

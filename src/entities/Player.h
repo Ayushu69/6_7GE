@@ -25,7 +25,6 @@ struct Player {
 
     float velX = 0.0f, velY = 0.0f;
     float acceleration = 0.0f, friction = 0.0f, maxSpeed = 0.0f, sprintSpeed = 300.0f;
-    float gravityAccel = 1800.0f;
     float jumpForce = 700.0f;
     bool onGround = false;
     bool wasSpacePressed = false;

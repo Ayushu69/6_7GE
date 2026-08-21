@@ -61,7 +61,7 @@ void Player::update(const Uint8* keys, float dt) {
     if(velX < -currentMax) velX = -currentMax;
 
     //gravity
-    velY += gravityAccel * dt;
+    velY += kGravityAccel * dt;
 
     // jump (edge-triggered: only on fresh press, not hold)
     bool spaceNow = keys[SDL_SCANCODE_SPACE];

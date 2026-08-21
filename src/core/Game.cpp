@@ -3,6 +3,8 @@
 #include "../physics/Collision.h"
 #include<algorithm>
 #include<cmath>
+#include<cstdlib>
+#include<ctime>
 
 Game::Game(SDL_Renderer* renderer) 
     : camera(kWindowWidth, kWindowHeight),
@@ -65,6 +67,8 @@ SDL_Texture* Game::renderText(SDL_Renderer* renderer, const std::string& text, S
 }
 
 void Game::renderHotbar(SDL_Renderer* renderer) {
+    srand(static_cast<unsigned int>(time(nullptr)));
+
     int slotSize = 48;
     int padding = 8;
     int totalWidth = player.hotbar.size() * slotSize + (player.hotbar.size() - 1) * padding;
@@ -105,6 +109,30 @@ void Game::renderHotbar(SDL_Renderer* renderer) {
         SDL_RenderDrawRect(renderer, &rect);
 
         x += slotSize + padding;
+    }
+}
+
+void Game::updateDroppedItems(float dt) {
+    for(auto &item : droppedItems) {
+        if(item.onGround) continue;
+
+        item.velY += kGravityAccel * dt;
+        item.rect.x += item.velX * dt;
+        item.rect.y += item.velY * dt;
+
+        int col = (int)((item.rect.x + item.rect.w * 0.5f) / (tilemap.tileSize * tilemap.renderScale));
+        int belowRow = (int)((item.rect.y + item.rect.h) / (tilemap.tileSize * tilemap.renderScale));
+
+        if(belowRow >= 0 && belowRow < tilemap.rows && col >= 0 && col < tilemap.cols) {
+            int tileBelow = tilemap.mapData[belowRow][col];
+            if(tilemap.isSolid(tileBelow)) {
+                SDL_FRect groundRect = tilemap.getTileRect(col, belowRow);
+                item.rect.y = groundRect.y - item.rect.h;
+                item.velY = 0.0f;
+                item.velX = 0.0f;
+                item.onGround = true;
+            }
+        }
     }
 }
 
@@ -156,25 +184,18 @@ bool Game::handleEvents() {
                                 tilemap.mapData[row][col] = -1;
                                 miningProgress = {-1, -1, 0}; // reset mining progress
 
-                                bool found = false;
-                                for (auto& slot : player.hotbar) {
-                                    if (slot.tileID == brokenID) {
-                                        // Add to inventory (simple stack, no max count for demo)
-                                        slot.count += 1;
-                                        found = true;
-                                        break;
-                                    }
-                                }
-                                if (!found) {
-                                    // Item not in hotbar, add to first empty slot
-                                    for (auto& slot : player.hotbar) {
-                                        if (slot.count == 0) {
-                                            slot.tileID = brokenID;
-                                            slot.count = 1;
-                                            break;
-                                        }
-                                    }
-                                }
+                                DroppedItem item;
+                                item.tileID = brokenID;
+                                item.rect = {
+                                    tileRect.x + (tileRect.w - kDroppedItemSize) * 0.5f,
+                                    tileRect.y + (tileRect.h - kDroppedItemSize) * 0.5f,
+                                    (float)kDroppedItemSize,
+                                    (float)kDroppedItemSize
+                                };
+                                item.velX = (float)(rand() % 100 - 50);
+                                item.velY = -80.0f;
+
+                                droppedItems.push_back(item);
                             }
                         }
                     }
@@ -354,6 +375,9 @@ void Game::update(const Uint8* keys, float dt) {
             miningProgress = {-1, -1, 0, 0.0f}; // reset mining progress after 1 second of inactivity
         }
     }
+
+    updateDroppedItems(dt);
+
     camera.update(
         player.rect.x + player.rect.w * 0.5f,
         player.rect.y + player.rect.h * 0.5f

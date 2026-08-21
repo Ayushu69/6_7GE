@@ -54,23 +54,24 @@ int main(int argc, char* argv[]) {
         SDL_Quit();
         return 1;
     }
+    {
+        Game game(renderer);
+        bool running = true;
 
-    Game game(renderer);
-    bool running = true;
+        Uint64 now = SDL_GetPerformanceCounter();
+        Uint64 last = now;
+        float dt = 0.0f;
 
-    Uint64 now = SDL_GetPerformanceCounter();
-    Uint64 last = now;
-    float dt = 0.0f;
+        while (running) {
+            last = now;
+            now = SDL_GetPerformanceCounter();
+            dt = (float)(now - last) / SDL_GetPerformanceFrequency();
 
-    while (running) {
-        last = now;
-        now = SDL_GetPerformanceCounter();
-        dt = (float)(now - last) / SDL_GetPerformanceFrequency();
-
-        // GAME SYSTEM (EVENTS, UPDATION, RENDERING)
-        running = game.handleEvents();
-        game.tick(static_cast<float>(dt));
-        render(renderer, game);
+            // GAME SYSTEM (EVENTS, UPDATION, RENDERING)
+            running = game.handleEvents();
+            game.tick(static_cast<float>(dt));
+            render(renderer, game);
+        }
     }
     
     SDL_DestroyRenderer(renderer);
