@@ -6,6 +6,13 @@
 #include<cstdlib>
 #include<ctime>
 
+bool rectsOverLap(const SDL_FRect &a, const SDL_FRect &b) {
+    return a.x < b.x + b.w && 
+    a.x + a.w > b.x && 
+    a.y < b.y + b.h && 
+    a.y + a.h > b.y;
+}
+
 Game::Game(SDL_Renderer* renderer) 
     : camera(kWindowWidth, kWindowHeight),
       player(64, 64, 4, 0.15f) {
@@ -114,18 +121,24 @@ void Game::renderHotbar(SDL_Renderer* renderer) {
 
 void Game::updateDroppedItems(float dt) {
     for(auto &item : droppedItems) {
-        if(item.onGround) continue;
-
-        item.velY += kGravityAccel * dt;
-        item.rect.x += item.velX * dt;
-        item.rect.y += item.velY * dt;
-
         int col = (int)((item.rect.x + item.rect.w * 0.5f) / (tilemap.tileSize * tilemap.renderScale));
         int belowRow = (int)((item.rect.y + item.rect.h) / (tilemap.tileSize * tilemap.renderScale));
+        bool supported = false;
 
         if(belowRow >= 0 && belowRow < tilemap.rows && col >= 0 && col < tilemap.cols) {
             int tileBelow = tilemap.mapData[belowRow][col];
-            if(tilemap.isSolid(tileBelow)) {
+            supported = tilemap.isSolid(tileBelow);
+        }
+        if(item.onGround && !supported) {
+            item.onGround = false;
+        }
+
+        if(!item.onGround) {
+            item.velY += kGravityAccel * dt;
+            item.rect.x += item.velX * dt;
+            item.rect.y += item.velY * dt;
+
+            if(supported) {
                 SDL_FRect groundRect = tilemap.getTileRect(col, belowRow);
                 item.rect.y = groundRect.y - item.rect.h;
                 item.velY = 0.0f;
@@ -253,6 +266,37 @@ bool Game::handleEvents() {
     return true;
 }
 
+void Game::checkItemPickups() {
+    for(int i= (int)droppedItems.size()-1; i>=0; i--){
+
+        DroppedItem &item = droppedItems[i];
+
+        if(rectsOverLap(player.rect, item.rect)) {
+            bool found = false;
+
+            for (auto& slot : player.hotbar) {
+                if (slot.tileID == item.tileID) {
+                // Add to inventory (simple stack, no max count for demo)
+                slot.count += 1;
+                found = true;
+                break;
+                }
+            }
+            if (!found) {
+                // Item not in hotbar, add to first empty slot
+                for (auto& slot : player.hotbar) {
+                    if (slot.count == 0) {
+                        slot.tileID = item.tileID;
+                        slot.count = 1;
+                        break;
+                    }
+                }
+            }
+            droppedItems.erase(droppedItems.begin() + i);
+        }
+    }
+}
+
 void Game::tick(float dt) {
     // SDL_PollEvent() in handleEvents() already pumps the event queue,
     // so SDL_GetKeyboardState() returns the up-to-date snapshot here.
@@ -377,6 +421,7 @@ void Game::update(const Uint8* keys, float dt) {
     }
 
     updateDroppedItems(dt);
+    checkItemPickups();
 
     camera.update(
         player.rect.x + player.rect.w * 0.5f,
@@ -397,6 +442,13 @@ void Game::render(SDL_Renderer* renderer) {
         dstRect.x -= camera.x;
         dstRect.y -= camera.y;
         SDL_RenderCopyF(renderer, textures.get("cracks"), &srcRect, &dstRect);
+    }
+    for(const auto &item : droppedItems) {
+        SDL_Rect srcItem = tilemap.getSrcRectForTile(item.tileID);
+        SDL_FRect dstItem = item.rect;
+        dstItem.x -= camera.x;
+        dstItem.y -= camera.y;
+        SDL_RenderCopyF(renderer, tilemap.tileset, &srcItem, &dstItem);
     }
 
     player.render(renderer, camera, textures);

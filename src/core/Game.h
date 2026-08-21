@@ -43,4 +43,5 @@ private:
     MiningProgress miningProgress; // Track the current mining progress
 
     void updateDroppedItems(float dt); // Update the physics and state of dropped items
+    void checkItemPickups(); // Check if the player is close enough to pick up any dropped items
 };
