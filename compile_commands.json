@@ -1,0 +1,100 @@
+[
+  {
+    "file": "src/main.cpp",
+    "arguments": [
+      "C:\\msys64\\ucrt64\\bin\\g++.exe",
+      "src/main.cpp",
+      "-o",
+      "bin/six_sevenGE.exe",
+      "-IC:/msys64/ucrt64/include/SDL2",
+      "-Dmain=SDL_main",
+      "-mwindows"
+    ],
+    "directory": "C:\\six_sevenGE",
+    "output": "bin/six_sevenGE.exe"
+  },
+  {
+    "file": "src/core/Game.cpp",
+    "arguments": [
+      "C:\\msys64\\ucrt64\\bin\\g++.exe",
+      "src/core/Game.cpp",
+      "-o",
+      "bin/six_sevenGE.exe",
+      "-IC:/msys64/ucrt64/include/SDL2",
+      "-Dmain=SDL_main",
+      "-mwindows"
+    ],
+    "directory": "C:\\six_sevenGE",
+    "output": "bin/six_sevenGE.exe"
+  },
+  {
+    "file": "src/entities/Player.cpp",
+    "arguments": [
+      "C:\\msys64\\ucrt64\\bin\\g++.exe",
+      "src/entities/Player.cpp",
+      "-o",
+      "bin/six_sevenGE.exe",
+      "-IC:/msys64/ucrt64/include/SDL2",
+      "-Dmain=SDL_main",
+      "-mwindows"
+    ],
+    "directory": "C:\\six_sevenGE",
+    "output": "bin/six_sevenGE.exe"
+  },
+  {
+    "file": "src/physics/Collision.cpp",
+    "arguments": [
+      "C:\\msys64\\ucrt64\\bin\\g++.exe",
+      "src/physics/Collision.cpp",
+      "-o",
+      "bin/six_sevenGE.exe",
+      "-IC:/msys64/ucrt64/include/SDL2",
+      "-Dmain=SDL_main",
+      "-mwindows"
+    ],
+    "directory": "C:\\six_sevenGE",
+    "output": "bin/six_sevenGE.exe"
+  },
+  {
+    "file": "src/core/TextureManager.cpp",
+    "arguments": [
+      "C:\\msys64\\ucrt64\\bin\\g++.exe",
+      "src/core/TextureManager.cpp",
+      "-o",
+      "bin/six_sevenGE.exe",
+      "-IC:/msys64/ucrt64/include/SDL2",
+      "-Dmain=SDL_main",
+      "-mwindows"
+    ],
+    "directory": "C:\\six_sevenGE",
+    "output": "bin/six_sevenGE.exe"
+  },
+  {
+    "file": "src/core/Tilemap.cpp",
+    "arguments": [
+      "C:\\msys64\\ucrt64\\bin\\g++.exe",
+      "src/core/Tilemap.cpp",
+      "-o",
+      "bin/six_sevenGE.exe",
+      "-IC:/msys64/ucrt64/include/SDL2",
+      "-Dmain=SDL_main",
+      "-mwindows"
+    ],
+    "directory": "C:\\six_sevenGE",
+    "output": "bin/six_sevenGE.exe"
+  },
+  {
+    "file": "src/core/Animator.cpp",
+    "arguments": [
+      "C:\\msys64\\ucrt64\\bin\\g++.exe",
+      "src/core/Animator.cpp",
+      "-o",
+      "bin/six_sevenGE.exe",
+      "-IC:/msys64/ucrt64/include/SDL2",
+      "-Dmain=SDL_main",
+      "-mwindows"
+    ],
+    "directory": "C:\\six_sevenGE",
+    "output": "bin/six_sevenGE.exe"
+  }
+]
